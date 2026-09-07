@@ -13,7 +13,8 @@ Measurement Sensors::acquire(uint32_t sequence) {
     m.temperature_c = dht.readTemperature();
     m.relative_humidity_pct = dht.readHumidity();
     m.gas_raw = analogRead(Config::GAS_PIN);
-    m.sensor_ok = std::isfinite(m.temperature_c) && std::isfinite(m.relative_humidity_pct);
+    m.gas_acquired = true; // Conversion completed; this does not diagnose sensor health.
+    m.environmental_sensor_ok = std::isfinite(m.temperature_c) && std::isfinite(m.relative_humidity_pct);
     // An analog voltage alone cannot establish gas identity or detect every disconnected wire.
     return m;
 }

@@ -26,7 +26,10 @@ The publisher uses access-token authentication (token as MQTT username), TLS cer
 | co2_ppm | ppm, synthetic |
 | node_id / sequence | Source and attempt identity |
 | sensor_status / network_status / storage_status | Acquisition-time states |
-| quality_flag | Raw-data review flags |
+| quality_code / quality_flags | Shared bitmask and pipe-separated readable names |
+| environmental_sensor_status / gas_channel_status | Separate channel diagnostics |
+| timestamp_status | SIMULATED_UTC for this publisher |
+| sensor_mode | Independent gas-fault selection |
 | buffered | Acquired offline, not current queue status |
 | scenario / simulated | Provenance; simulated is always true |
 | split | Training or Validation in generated dataset |
@@ -34,7 +37,9 @@ The publisher uses access-token authentication (token as MQTT username), TLS cer
 Missing values are omitted because ThingsBoard telemetry values are typed scalars; their quality flags remain available. Top-level `ts` is epoch milliseconds converted from record UTC. Example shape, with illustrative synthetic numbers:
 
 ```json
-{"ts":1767225600000,"values":{"node_id":"virtual-barn-01","sequence":0,"temperature_c":22.1,"relative_humidity_pct":69.5,"nh3_raw_ppm":9.2,"quality_flag":"VALID","simulated":true}}
+{"ts":1767225600000,"values":{"node_id":"virtual-barn-01","sequence":0,"temperature_c":22.1,"relative_humidity_pct":69.5,"nh3_raw_ppm":9.2,"quality_code":0,"quality_flags":"VALID","simulated":true}}
 ```
 
 Official references: [MQTT telemetry](https://thingsboard.io/docs/reference/mqtt-api/telemetry/) and [MQTT access-token authentication](https://thingsboard.io/docs/reference/mqtt-api/). These describe the service protocol; no live cloud execution is claimed in this repository.
+
+See [schema contract](../docs/schema.md). The publisher rejects missing or timezone-naive UTC and emits strict JSON with nonfinite values omitted. Payload unit tests do not establish successful delivery to a broker.

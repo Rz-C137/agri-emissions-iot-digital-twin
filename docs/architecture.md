@@ -58,17 +58,33 @@ stateDiagram-v2
     [*] --> Normal
     Normal --> NetworkOffline: inject outage
     NetworkOffline --> Buffering: acquisition continues
-    Buffering --> Synchronizing: RECOVERY
+    Buffering --> Synchronizing: restore network only
     Synchronizing --> Normal: simulated acknowledgement
     Normal --> SensorFault: disconnect / timeout
     SensorFault --> SensorFault: retry next acquisition
-    SensorFault --> Normal: RECOVERY and successful read
+    SensorFault --> Normal: restore sensor and successful read
     Normal --> StorageFault: write failure
-    StorageFault --> Normal: RECOVERY and pending writes succeed
+    StorageFault --> Normal: restore storage and pending writes succeed
 ```
 
-The diagram summarizes transitions; network and storage faults are independent and can coexist. Choosing NORMAL clears a sensor/high-concentration scenario but does not reconnect infrastructure. RECOVERY requests healthy infrastructure and restores the normal sensor model. Physical disconnection and recovery are not inferred by this Python engine.
+The diagram summarizes transitions; network, storage, gas-acquisition mode and environmental conditions are independent. Restore sensor, restore network and restore storage affect only that dimension. Restore all faults is explicit and leaves the environment unchanged. Each actual transition logs old and new states; repeated identical requests do not reset drift or outage timers. Physical disconnection and recovery are not inferred by the Python engine.
+
+`simulator/health.py` separates environmental indication (BASELINE/ELEVATED/UNKNOWN), acquisition/infrastructure health, sensor, network, storage and data quality. An abrupt high synthetic concentration can be ELEVATED with OPERATIONAL acquisition and REVIEW_REQUIRED data. Missing or implausible gas values make the environmental indication UNKNOWN.
 
 ## Delivery boundaries
 
 Python queues never evict records silently, but memory consumption grows with session length. No process-restart replay is implemented. Firmware queues are bounded and explicitly count rejected records. ESP32 QoS 0 return values mean publish accepted by the client, not durable broker receipt. The optional Python publisher waits for QoS 1 acknowledgement and checkpoints progress, with possible duplicates after a crash between acknowledgement and checkpoint. None of these layers claims exactly-once end-to-end delivery.
+
+
+## Proposed physical analog front end — not validated
+
+```mermaid
+flowchart LR
+    G[Gas module output: characterize worst-case voltage] --> S[Divider or buffer with tolerance margin]
+    S --> F[Low-pass filtering and source-impedance review]
+    F --> P[Input protection and power-sequence review]
+    P --> A[ESP32 ADC: allowable input and attenuation]
+    A --> C[Voltage calibration then instrument characterization]
+```
+
+Wokwi's direct AO-to-GPIO34 wire is simulator-specific, not this physical front end. Supply voltage, output range, ADC allowable input, source impedance, settling, filtering, protection, loading and calibration must be evaluated together before building hardware. ADC attenuation does not make a pin 5 V tolerant. See [analog-chain notes](../wokwi/README.md).

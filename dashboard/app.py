@@ -12,7 +12,8 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from simulator.engine import SCENARIOS, Twin  # noqa: E402
+from simulator.engine import SENSOR_MODES, Twin  # noqa: E402
+from simulator.health import assess  # noqa: E402
 from simulator.model import Config  # noqa: E402
 from validation.analysis import calibrate, dataset  # noqa: E402
 
@@ -114,28 +115,57 @@ def content() -> None:
 
     if page in ("Overview", "Live Monitoring", "Fault Injection"):
         if page == "Fault Injection":
-            scenario = st.selectbox("Inject a scenario", SCENARIOS)
-            if st.button("Apply and acquire one sample", type="primary"):
-                twin.set_scenario(scenario)
+            st.caption("Each control changes one state only and acquires a sample immediately.")
+            environment, sensor, infrastructure = st.columns(3)
+            with environment:
+                st.markdown("**Synthetic environment**")
+                if st.button("Increase synthetic NH₃"):
+                    twin.set_environment("HIGH_NH3")
+                    twin.step()
+                    st.rerun()
+                if st.button("Baseline environment"):
+                    twin.set_environment("NORMAL")
+                    twin.step()
+                    st.rerun()
+            with sensor:
+                st.markdown("**Gas acquisition**")
+                mode = st.selectbox("Gas fault", SENSOR_MODES[1:])
+                if st.button("Apply gas fault"):
+                    twin.set_sensor(mode)
+                    twin.step()
+                    st.rerun()
+                if st.button("Restore sensor"):
+                    twin.set_sensor("NORMAL")
+                    twin.step()
+                    st.rerun()
+            with infrastructure:
+                st.markdown("**Infrastructure**")
+                for label, action, target in [
+                    ("Disconnect network", twin.set_network, False),
+                    ("Restore network only", twin.set_network, True),
+                    ("Fail storage", twin.set_storage, False),
+                    ("Restore storage only", twin.set_storage, True),
+                ]:
+                    if st.button(label):
+                        action(target)
+                        twin.step()
+                        st.rerun()
+            if st.button("Restore all faults"):
+                twin.restore_all()
                 twin.step()
                 st.rerun()
-            st.caption(
-                "Network and storage failures persist until RECOVERY. Other sensor scenarios replace the previous sensor scenario."
-            )
-        healthy = (
-            last["sensor_status"] == "OK"
-            and twin.network == "ONLINE"
-            and twin.storage == "OK"
-            and last["quality_flag"] == "VALID"
-        )
-        if healthy:
+            st.caption("Restore all faults leaves the synthetic environment unchanged.")
+        health = assess(last, twin.network, twin.storage)
+        if health.measurement_system == "OPERATIONAL":
             st.success(
-                "Monitoring system healthy · acquisition, local logging and simulated delivery active"
+                "Measurement system operational · acquisition, local logging and simulated delivery active"
             )
         else:
-            st.warning(
-                "Monitoring system needs attention · inspect the status and quality flags below"
-            )
+            st.warning(f"Measurement system: {health.measurement_system.replace('_', ' ').lower()}")
+        st.markdown(
+            f"**Environmental indication:** {health.environmental_condition} · "
+            f"**Data quality:** {health.data_quality}"
+        )
         if twin.network == "OFFLINE":
             st.info(
                 "Measurements continue locally while the network is unavailable. Records await simulated synchronization."
@@ -144,24 +174,24 @@ def content() -> None:
             st.error(
                 "Local storage is unavailable. Pending writes are held in session memory and are at risk if the process stops."
             )
-        if last["quality_flag"] != "VALID":
+        if last["quality_flags"] != "VALID":
             st.warning(
-                f"Current sample requires review: {last['quality_flag']}. Raw values remain available under Data Quality."
+                f"Current sample requires review: {last['quality_flags']}. Raw values remain available under Data Quality."
             )
-        if last["nh3_raw_ppm"] is not None and last["nh3_raw_ppm"] > 25:
+        if health.environmental_condition == "ELEVATED":
             st.warning(
                 "Elevated synthetic NH₃ signal. The 25 ppm display threshold is an illustrative scenario setting, not an exposure limit."
             )
         a, b, c, d = st.columns(4)
-        valid_now = last["quality_flag"] == "VALID"
+        finite_now = last["nh3_raw_ppm"] is not None and np.isfinite(last["nh3_raw_ppm"])
         a.metric(
-            "NH₃ · simulated raw", f"{last['nh3_raw_ppm']:.1f} ppm" if valid_now else "Needs review"
+            "NH₃ · simulated raw", f"{last['nh3_raw_ppm']:.1f} ppm" if finite_now else "Unavailable"
         )
         b.metric("Air temperature", f"{last['temperature_c']:.1f} °C")
         c.metric("Relative humidity", f"{last['relative_humidity_pct']:.1f} %")
         d.metric("Data completeness", f"{completeness:.1f} %")
         st.markdown(
-            f"**Scenario:** {twin.scenario} · **Gas sensor:** {last['sensor_status']} · "
+            f"**Environment:** {twin.environment_mode} · **Gas channel:** {last['gas_channel_status']} · "
             f"**Network:** {twin.network} · **Storage:** {twin.storage}"
         )
         line(
@@ -232,8 +262,8 @@ def content() -> None:
 
     elif page == "Data Quality":
         a, b, c = st.columns(3)
-        a.metric("Valid", int((frame.quality_flag == "VALID").sum()))
-        b.metric("Flagged", int((frame.quality_flag != "VALID").sum()))
+        a.metric("Valid", int((frame.quality_flags == "VALID").sum()))
+        b.metric("Flagged", int((frame.quality_flags != "VALID").sum()))
         c.metric("Missing / nonfinite NH₃", int((~available).sum()))
         st.write(
             f"Completeness: {completeness:.1f}% of acquisition attempts contain a finite raw NH₃ value. Completeness is distinct from validity."
@@ -259,7 +289,7 @@ def content() -> None:
     elif page == "Calibration & Validation":
         calibrated, report = validation_data()
         st.write(
-            "A separate, fixed three-day synthetic dataset keeps this comparison reproducible. The first 60% trains a two-parameter linear correction; the final 40% evaluates it without refitting."
+            "Current demonstration: affine sensor-to-reference calibration. Temperature/humidity compensation is a possible future extension, not fitted here. A separate, fixed three-day synthetic dataset keeps this comparison reproducible. The first 60% trains a two-parameter linear correction; the final 40% evaluates it without refitting."
         )
         st.caption(
             f"Calibration: corrected = {report['slope']:.4f} × raw + {report['intercept']:.4f} ppm. Training pairs: {report['fit_pairs']}; holdout rows: {report['validation_rows']}."
@@ -324,6 +354,9 @@ def content() -> None:
                 "transport": "In-process acknowledged simulation; optional MQTT publisher is separate",
                 "queue": "Session-memory dictionaries keyed by sequence; no silent eviction",
                 "storage": str(twin.log_path),
+                "quality_contract": "quality_code bitmask + quality_flags pipe-separated names; VALID = 0",
+                "time_contract": "timestamp UTC or null; timestamp_status identifies SIMULATED_UTC/NTP_UTC/UNSYNCHRONIZED; uptime_ms is separate",
+                "firmware_diagnostics": "Environmental sensor OK/ERROR; analog gas channel UNVERIFIED even with plausible ADC counts",
                 "sensor_model": vars(twin.config) | {"start": twin.config.start.isoformat()},
             }
         )

@@ -19,6 +19,7 @@ void setup() {
     state.storage = logger.begin();
     telemetry.begin();
     configTime(0, 0, "pool.ntp.org");
+    FaultManager::event(state.storage ? "INFO" : "ERROR", state.storage ? "SD initialized" : "SD initialization failed");
     FaultManager::event("INFO", "Virtual surrogate acquisition; MQ2 is not selective NH3");
 }
 void loop() {
@@ -31,16 +32,16 @@ void loop() {
         m.network_ok = state.network;
         m.storage_ok = state.storage;
         m.buffered = !state.network;
-        if (!m.sensor_ok) FaultManager::sensorFailure(state);
+        if (!m.environmental_sensor_ok) FaultManager::sensorFailure(state);
         if (state.storage && !logger.append(m)) state.storage = false;
         m.storage_ok = state.storage;
-        if (!state.storage) FaultManager::event("ERROR", "Local write unavailable; record only in telemetry RAM queue");
+        if (!state.storage) FaultManager::event("ERROR", "Local write unavailable; telemetry queue attempt follows; record is not durable");
         if (!telemetry.enqueue(m)) {
             state.queue_overflows++;
-            FaultManager::event("ERROR", "Telemetry queue full; new record rejected, inspect SD archive");
+            FaultManager::event("ERROR", "Telemetry queue full; new record rejected; SD copy exists only if local write succeeded");
         }
         Serial.println(Logger::csv(m));
-        digitalWrite(Config::LED_PIN, m.sensor_ok && state.storage);
+        digitalWrite(Config::LED_PIN, m.environmental_sensor_ok && state.storage);
     }
     if (!state.storage && now - lastStorageRetry >= Config::RETRY_MS) {
         lastStorageRetry = now;

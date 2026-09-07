@@ -30,7 +30,7 @@ def calibrate(frame: pd.DataFrame, fraction: float = 0.6) -> tuple[pd.DataFrame,
     cut = int(len(frame) * fraction)
     train = frame.iloc[:cut]
     valid = np.isfinite(train.nh3_raw_ppm) & np.isfinite(train.nh3_reference_ppm)
-    valid &= train.quality_flag == "VALID"
+    valid &= train.quality_flags == "VALID"
     if valid.sum() < 3 or train.loc[valid, "nh3_raw_ppm"].nunique() < 2:
         raise ValueError("Calibration needs at least three valid, varying training pairs.")
     x = train.loc[valid, "nh3_raw_ppm"].to_numpy()

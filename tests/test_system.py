@@ -21,23 +21,23 @@ def test_reproducibility():
 )
 def test_sensor_fault_and_recovery(scenario, status):
     twin = Twin()
-    twin.set_scenario(scenario)
+    twin.set_sensor(scenario)
     r = twin.step()
-    assert r["nh3_raw_ppm"] is None and r["sensor_status"] == status
-    assert "COMMUNICATION" in r["quality_flag"] and twin.retries == 1
+    assert r["nh3_raw_ppm"] is None and r["gas_channel_status"] == status
+    assert "COMMUNICATION" in r["quality_flags"] and twin.retries == 1
     assert r["temperature_c"] is not None
-    twin.set_scenario("RECOVERY")
+    twin.restore_all()
     assert twin.step()["sensor_status"] == "OK"
 
 
 def test_network_no_silent_loss(tmp_path):
     twin = Twin(log_path=tmp_path / "records.csv")
     twin.step(4)
-    twin.set_scenario("NETWORK_OFFLINE")
+    twin.set_network(False)
     twin.step(40)
     assert len(twin.pending) == 40 and len(twin.local_ids) == 44
     assert len(pd.read_csv(twin.log_path)) == 44
-    twin.set_scenario("RECOVERY")
+    twin.restore_all()
     twin.step()
     assert not twin.pending
     assert set(twin.delivered) == set(range(45))
@@ -49,11 +49,11 @@ def test_network_no_silent_loss(tmp_path):
 
 def test_combined_outage_and_storage_recovery(tmp_path):
     twin = Twin(log_path=tmp_path / "data.csv")
-    twin.set_scenario("NETWORK_OFFLINE")
-    twin.set_scenario("STORAGE_FAILURE")
+    twin.set_network(False)
+    twin.set_storage(False)
     twin.step(10)
     assert len(twin.local_pending) == len(twin.pending) == 10
-    twin.set_scenario("RECOVERY")
+    twin.restore_all()
     twin.step()
     assert not twin.local_pending and not twin.pending
     assert set(twin.delivered) == twin.local_ids == set(range(11))
@@ -69,9 +69,9 @@ def test_actual_write_failure_is_visible(tmp_path):
 def test_quality_preserves_invalid_and_detects_stale_range_abrupt():
     twin = Twin()
     twin.step(20)
-    twin.set_scenario("INVALID_READING")
+    twin.set_sensor("INVALID_READING")
     record = twin.step()
-    assert np.isnan(record["nh3_raw_ppm"]) and "INVALID" in record["quality_flag"]
+    assert np.isnan(record["nh3_raw_ppm"]) and "INVALID" in record["quality_flags"]
     record = dict(twin.records[0], relative_humidity_pct=120, nh3_raw_ppm=100)
     flags = check(
         record, twin.records[:20], QualityConfig(), twin.config.start + timedelta(seconds=300)
@@ -97,3 +97,74 @@ def test_calibration_does_not_learn_from_holdout():
     assert first["slope"] == second["slope"]
     assert first["intercept"] == second["intercept"]
     assert second["calibrated"]["RMSE_ppm"] > 90
+
+
+@pytest.mark.parametrize("first", ["network", "storage"])
+def test_independent_recovery_and_record_accounting(tmp_path, first):
+    twin = Twin(log_path=tmp_path / "records.csv")
+    twin.set_sensor("SENSOR_DISCONNECTED")
+    twin.set_network(False)
+    twin.set_storage(False)
+    twin.step(8)
+    if first == "network":
+        twin.set_network(True)
+    else:
+        twin.set_storage(True)
+    twin.step(3)
+    assert twin.sensor_mode == "SENSOR_DISCONNECTED"
+    assert twin.storage == ("FAILED" if first == "network" else "OK")
+    assert twin.network == ("ONLINE" if first == "network" else "OFFLINE")
+    assert len(twin.pending) == (0 if first == "network" else 11)
+    assert len(twin.local_pending) == (11 if first == "network" else 0)
+    twin.set_sensor("NORMAL")
+    twin.step()
+    assert twin.records[-1]["gas_channel_status"] == "OK"
+    twin.restore_all()
+    twin.step()
+    assert set(twin.delivered) == twin.local_ids == set(range(13))
+    disk = pd.read_csv(twin.log_path)
+    assert disk.sequence.is_unique and set(disk.sequence) == set(range(13))
+
+
+def test_repeated_state_requests_do_not_restart_faults():
+    twin = Twin()
+    twin.set_sensor("SENSOR_DRIFT")
+    twin.step(4)
+    twin.set_sensor("SENSOR_DRIFT")
+    assert twin.sensor_start == 0
+    assert len([e for e in twin.events if e["event_type"] == "SENSOR_STATE"]) == 1
+    twin.set_network(False)
+    twin.step(4)
+    twin.set_network(False)
+    assert twin.outage_start == 4
+
+
+def test_environment_health_is_separate_from_system_and_quality():
+    from simulator.health import assess
+
+    twin = Twin()
+    twin.step(20)
+    twin.set_environment("HIGH_NH3")
+    row = twin.step()
+    health = assess(row, twin.network, twin.storage)
+    assert health.environmental_condition == "ELEVATED"
+    assert health.measurement_system == "OPERATIONAL"
+    assert health.data_quality == "REVIEW_REQUIRED"
+    twin.set_network(False)
+    twin.set_sensor("SENSOR_TIMEOUT")
+    row = twin.step()
+    assert assess(row, twin.network, twin.storage).environmental_condition == "UNKNOWN"
+    twin.restore_all()
+    assert twin.environment_mode == "HIGH_NH3"
+
+
+def test_quality_contract_and_duplicate_guard():
+    from simulator.quality import quality_code
+
+    assert quality_code("MISSING|COMMUNICATION") == 5
+    assert quality_code("VALID") == 0
+    twin = Twin()
+    twin.step()
+    twin.delivered[1] = twin.records[0]
+    with pytest.raises(RuntimeError, match="Duplicate sequence"):
+        twin.step()

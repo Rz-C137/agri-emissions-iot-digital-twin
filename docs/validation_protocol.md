@@ -20,7 +20,7 @@ For `error = sensor − reference`, bias is mean error, MAE is mean absolute err
 
 The calibration page plots time-series comparison, reference/sensor scatter, 1:1 agreement, residuals versus reference, time, temperature and humidity, and compares raw/calibrated metrics. Residual covariate structure is evidence that a single linear correction may be insufficient, not an invitation to tune against the holdout. The reference has its own simulated uncertainty. Sharing a synthetic latent model makes this test much easier than real validation.
 
-Network recovery time is elapsed simulated seconds from outage injection until the first post-recovery synchronization cycle. It includes outage duration; it is not a measured radio reconnection latency or gas sensor response time. The local receiver drains instantly in model time. Sensor retries occur once per scheduled sample.
+Network recovery time is elapsed simulated seconds from outage injection until the first synchronization cycle after restoring the network only. It includes outage duration; it is not a measured radio reconnection latency or gas sensor response time. The local receiver drains instantly in model time. Sensor retries occur once per scheduled sample.
 
 ## Proposed laboratory workflow — not performed
 
@@ -35,3 +35,5 @@ Validation would assess signed bias, precision, MAE/RMSE, concentration-dependen
 I would test sensor disconnects, power interruptions, exhausted storage and network outages with a known acquisition count. Acceptance criteria would be set before testing and would include record accounting, timestamp quality and recovery time. Durable replay and deduplication would be verified across resets rather than inferred from an in-memory simulation.
 
 Only after laboratory evaluation would I propose field trials with placement, maintenance and environmental metadata. Ventilation and representative concentration sampling would be required before calculating emission mass flux. No certified procedure or successful laboratory/field result is claimed here.
+
+Current demonstration: simple affine sensor-to-reference calibration. Possible future extension: temperature- and humidity-compensated calibration using a separately defined training/selection protocol. The current holdout is not used to choose parameters or a model family.

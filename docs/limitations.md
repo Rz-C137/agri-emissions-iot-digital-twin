@@ -12,6 +12,6 @@
 - Firmware has 120 volatile telemetry slots, explicit overflow counters and no SD replay. Failed local writes are reported but not backfilled after SD recovery. MQTT QoS 0 can lose accepted transmissions; no end-to-end no-loss claim applies to firmware.
 - The optional Python publisher uses QoS 1 and checkpointing. Duplicate publication remains possible after interruption, and broker acknowledgement does not prove every downstream database action succeeded.
 - DHT acquisition and MQTT connection calls can block briefly. The firmware is cooperative, not hard real-time. Analog pin floating/saturation cannot reliably diagnose every MQ2 wiring fault.
-- NTP-unavailable firmware timestamps use zero plus uptime; absolute time is unknown. Restarted sequence numbers require a run identifier in a future multi-session ingestion bridge.
+- NTP-unavailable firmware UTC is null/blank with UNSYNCHRONIZED status; uptime is a separate duration. Restarted sequence numbers require a run identifier in a future multi-session ingestion bridge.
 - Wokwi does not validate physical voltage safety, contamination resistance, sensor warm-up, component aging or EMC. A real MQ2 module may require output conditioning before a 3.3 V ESP32 ADC.
-- The current diagrams, browser setup and firmware compilation support reproducibility; actual browser execution and physical hardware verification remain separate checks.
+- The current diagrams, browser setup and firmware compilation support reproducibility; the revision-specific browser and physical verification evidence is recorded separately in verification.md.

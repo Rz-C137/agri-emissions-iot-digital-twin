@@ -9,7 +9,9 @@ struct Measurement {
     float temperature_c = NAN;
     float relative_humidity_pct = NAN;
     uint16_t gas_raw = 0;
-    bool sensor_ok = false;
+    bool environmental_sensor_ok = false;
+    // ADC conversion is observable; the analog instrument's health is not.
+    bool gas_acquired = false;
     bool network_ok = false;
     bool storage_ok = false;
     bool buffered = false;

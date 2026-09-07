@@ -4,12 +4,12 @@
 #include "Config.h"
 #include "Measurement.h"
 #include "SystemState.h"
+#include "RecordQueue.h"
 
 class Telemetry {
     WiFiClient socket;
     PubSubClient mqtt{socket};
-    Measurement queue[Config::QUEUE_SIZE];
-    size_t head = 0, count = 0;
+    RecordQueue<Config::QUEUE_SIZE> queue;
     uint32_t lastAttempt = 0;
 public:
     void begin();

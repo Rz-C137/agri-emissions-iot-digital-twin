@@ -1,32 +1,29 @@
 # Interview demonstration
 
-Before the interview, install dependencies, start Streamlit and open Overview. Keep the internet disconnected if desired. The primary demo needs no accounts. Open a terminal at the repository for optional code inspection. Use manual steps for reliable timing and reset to start fresh.
+Start Streamlit, select Fault Injection and leave automatic running off for precise pacing. Each button changes one dimension and advances one sample. Infrastructure and sensor restoration never resets the synthetic environment. All values and the reference are virtual.
 
-## Five-minute sequence
+## 90-second demonstration
 
-| Time | Action | Suggested first-person explanation |
-| --- | --- | --- |
-| 0:00–0:35 | Overview | I built a virtual measurement-system twin to examine how sensor readings become trustworthy records. Every value here is synthetic; I am demonstrating concentration monitoring, not measured farm emissions. |
-| 0:35–1:00 | Live Monitoring; advance ten samples | I keep acquisition, sensor state and communication state visible separately. Temperature, humidity and the gas signal evolve with simulated time. |
-| 1:00–1:25 | Fault Injection → HIGH_NH3 → Apply | I inject an elevated concentration. The signal changes and the quality layer flags the abrupt transition for review; it does not delete it. |
-| 1:25–2:05 | NETWORK_OFFLINE → Apply; advance ten samples | I continue collecting and logging while the network is unavailable. Compare total attempts, local records and pending telemetry. |
-| 2:05–2:30 | RECOVERY → Apply | I restore the simulated link. Pending records are acknowledged and the receiver count catches up. This proves record accounting within this session, not physical-network durability. |
-| 2:30–3:05 | SENSOR_DISCONNECTED → Apply | I fail the gas acquisition while ambient sensing continues. A missing value cannot appear as a valid NH₃ measurement. Retries and events are visible. |
-| 3:05–3:30 | Data Quality | I retain every attempt, count missing data separately from flagged finite readings and preserve raw evidence for review. |
-| 3:30–4:25 | Calibration & Validation | I fit a simple linear correction on earlier synthetic data and evaluate later samples. RMSE summarizes disagreement; residual plots show where the model remains imperfect. This reference is also virtual. |
-| 4:25–5:00 | Architecture / Technical Details | I separated hardware APIs from logic. The next step would be an NH₃-appropriate instrument, reference traceability, controlled environmental testing and power-safe delivery. MQ2 only demonstrates ADC acquisition. |
+| Time | Action and first-person explanation |
+| --- | --- |
+| 0–15 s | Overview: I model the measurement system, not full barn physics. I separate environmental indication from acquisition, communications, storage and data quality. |
+| 15–35 s | Fault Injection → Disconnect network → Advance 10 samples. I keep acquisition independent of network availability because a telemetry outage should not interrupt local measurements. The pending queue grows while local records continue. |
+| 35–50 s | Restore network only. I reconcile the pending records in this controlled simulation; I am not claiming reboot-safe delivery. |
+| 50–70 s | Apply gas fault (SENSOR_DISCONNECTED), then Restore sensor. I preserve the acquisition attempt and attach quality information rather than silently deleting an abnormal observation. Ambient measurements continue. |
+| 70–90 s | Calibration & Validation. I fit an affine correction on earlier samples and evaluate later ones. I treat the virtual reference as a lower-error comparison instrument, not absolute ground truth. |
 
-## 90-second sequence
+## 5-minute technical demonstration
 
-1. **0–15 seconds:** Overview: synthetic concentration, system health, independent portfolio scope.
-2. **15–40 seconds:** Inject NETWORK_OFFLINE, advance ten samples, show local and pending counts.
-3. **40–55 seconds:** Apply RECOVERY; show receiver catch-up and synchronization event.
-4. **55–70 seconds:** Apply SENSOR_DISCONNECTED; show missing gas value and quality flag.
-5. **70–90 seconds:** Calibration page: chronological holdout and residuals; explain the proposed physical validation pathway.
+| Time | Action and first-person explanation |
+| --- | --- |
+| 0:00–0:30 | Overview, normal monitoring. I show synthetic NH₃, °C and RH alongside six distinct health dimensions. None of this is a farm campaign. |
+| 0:30–0:55 | Increase synthetic NH₃. I demonstrate an elevated condition without equating it to broken acquisition. Abrupt-change flags remain visible and raw data is retained. |
+| 0:55–1:30 | Disconnect network; advance ten samples. I show local records, total attempts and pending telemetry separately. The elevated environment remains active. |
+| 1:30–1:50 | Restore network only. I show synchronized receiver counts and the timestamped recovery event. Queued telemetry remains volatile until serviced. |
+| 1:50–2:20 | Fail storage; advance ten samples. I show the failed local-write path while the network remains online. Restore storage only and show pending local writes backfilled. |
+| 2:20–2:55 | Apply gas fault, then Data Quality. I preserve the raw observation/failed attempt and quality_code plus readable quality_flags. DHT diagnostics and analog gas-channel health are different: a plausible ADC voltage does not prove a real gas sensor is healthy. |
+| 2:55–3:15 | Restore sensor. I restore only acquisition; the synthetic environment remains elevated until I choose Baseline environment. |
+| 3:15–4:15 | Calibration & Validation. I retain the chronological holdout and explain bias/RMSE and residuals. Temperature/humidity compensation is a possible future extension, not the model fitted here. |
+| 4:15–5:00 | Technical Details / firmware. I distinguish simulated UTC, NTP-derived time and uptime. Firmware rejects new telemetry on queue overflow and reports it; QoS 0 does not acknowledge end-to-end delivery. I would validate a conditioned analog front end and a suitable NH₃ instrument against a traceable reference before physical claims. |
 
-## Questions I am prepared to answer
-
-- **Does it measure NH₃ with MQ2?** No. The NH₃ instrument is synthetic Python data. ESP32 MQ2 readings remain analog surrogate counts.
-- **Does no data loss survive power failure?** No. The demonstrated no-gap invariant covers the running Python session. Durable replay and physical fault tests are future work.
-- **Why a simple calibration?** Its slope/intercept and residual structure are explainable; better synthetic metrics alone would not justify a more complex model.
-- **Why call it a digital twin?** It mirrors a measurement system's acquisition, quality and operational states. It is not a full building model.
+For an additional combined-fault challenge, disconnect the network, fail storage and apply a gas fault. Restore network only and verify storage and sensor faults remain. Restore storage only while the network is offline to demonstrate the opposite direction. **Restore all faults** is an explicit convenience, never an implicit recovery side effect.

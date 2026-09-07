@@ -10,6 +10,18 @@ import paho.mqtt.client as mqtt
 import pandas as pd
 
 
+def payload_for(record: dict) -> str:
+    """Serialize a UTC record; omit nonfinite scalars while retaining quality provenance."""
+    # pandas normalizes NaN to null; the final strict JSON encoder rejects regressions.
+    row = json.loads(pd.Series(record).to_json())
+    timestamp = pd.Timestamp(row.pop("timestamp"))
+    if pd.isna(timestamp) or timestamp.tzinfo is None:
+        raise ValueError("Telemetry requires an available timezone-aware UTC timestamp.")
+    values = {key: value for key, value in row.items() if value is not None}
+    values["simulated"] = True
+    return json.dumps({"ts": int(timestamp.timestamp() * 1000), "values": values}, allow_nan=False)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("csv", type=Path)
@@ -31,11 +43,7 @@ def main() -> None:
     client.loop_start()
     try:
         for index in range(start, len(frame)):
-            row = json.loads(frame.iloc[index].to_json())
-            timestamp = int(pd.Timestamp(row.pop("timestamp")).timestamp() * 1000)
-            values = {key: value for key, value in row.items() if value is not None}
-            values["simulated"] = True
-            payload = json.dumps({"ts": timestamp, "values": values}, allow_nan=False)
+            payload = payload_for(frame.iloc[index].to_dict())
             info = client.publish("v1/devices/me/telemetry", payload, qos=1)
             info.wait_for_publish(timeout=10)
             if not info.is_published():

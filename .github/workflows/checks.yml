@@ -12,6 +12,7 @@ jobs:
       - run: python -m pytest -q
       - run: python -m ruff check .
       - run: python -m ruff format --check .
+      - run: python -m simulator --output /tmp/agri-demo.csv
       - run: g++ -std=c++11 -Ifirmware/include firmware/test/quality_native.cpp -o /tmp/quality-test
       - run: /tmp/quality-test
   firmware:

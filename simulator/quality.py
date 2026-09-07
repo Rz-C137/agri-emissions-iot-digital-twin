@@ -24,7 +24,6 @@ def check(
         ("temperature_c", -20, 60),
         ("relative_humidity_pct", 0, 100),
         ("nh3_raw_ppm", 0, 200),
-        ("gas_raw", 0, 4095),
     ]:
         value = record.get(key)
         if value is None:
@@ -53,3 +52,20 @@ def check(
             if abs(value - median) > config.outlier_sigma * scale:
                 flags.append("OUTLIER")
     return "|".join(sorted(set(flags))) or "VALID"
+
+
+# Shared wire contract with firmware/Quality.h. VALID has no bits set.
+QUALITY_BITS = {
+    "MISSING": 1,
+    "RANGE": 2,
+    "COMMUNICATION": 4,
+    "INVALID": 8,
+    "ABRUPT": 16,
+    "STALE": 32,
+    "OUTLIER": 64,
+}
+
+
+def quality_code(flags: str) -> int:
+    """Encode the human-readable pipe-separated quality field without losing information."""
+    return sum(QUALITY_BITS[flag] for flag in set(flags.split("|")) if flag != "VALID")

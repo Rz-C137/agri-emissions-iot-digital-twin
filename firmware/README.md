@@ -25,9 +25,9 @@ This firmware's unauthenticated non-TLS MQTT is intended only for an isolated tr
 ## Behavior and limits
 
 - Acquires every five seconds independently of whether the MQTT client is connected.
-- DHT communication failures produce NaN/quality bits and a next-sample retry event.
+- DHT communication failures produce missing-value sentinels/quality bits and a next-sample retry event.
 - CSV logging to microSD and serial preserves raw temperature, humidity and ADC counts. NH₃ columns are empty.
-- Uses NTP epoch seconds when available and monotonic 64-bit uptime otherwise; zero epoch means unsynchronized.
+- Serializes NTP-derived UTC when available; otherwise timestamp is null/blank with UNSYNCHRONIZED status. Monotonic 64-bit uptime remains a separate field.
 - Retries WiFi/MQTT and SD mounting every ten seconds. MQTT connection attempts can block briefly; this is not a hard real-time scheduler.
 - Buffers up to 120 records in RAM. On overflow, it counts and reports each rejected telemetry record. Healthy SD logging continues.
 - Drains records after client reconnect. QoS 0 publish success is not broker acknowledgement. SD records are not automatically replayed, and failed local writes are not backfilled.
@@ -41,3 +41,8 @@ g++ -std=c++11 -Iinclude test/quality_native.cpp -o quality-test
 ```
 
 The Python fault engine is richer than the firmware. No automatic browser fault injection, real MQ2 disconnection detection, reboot persistence or laboratory testing is claimed.
+
+
+The revised wire/CSV contract is documented in [schema.md](../docs/schema.md): numeric `quality_code`, readable pipe-separated `quality_flags`, separate environmental/gas/aggregate status and explicit timestamp provenance. Gas ADC acquisition leaves health UNVERIFIED, including at zero or a static count. No analog wiring-fault detection is claimed. New logs use `/measurements-v2.csv`.
+
+The native test now checks quality names, missing/nonfinite JSON, unsynchronized and synchronized timestamps, serialization truncation, and bounded-queue overflow/FIFO behavior. A full queue rejects the new telemetry record without replacing an older one. The SD copy exists only if that sample's local write succeeded. QoS 0 publish does not establish end-to-end delivery acknowledgement; queued telemetry remains volatile.

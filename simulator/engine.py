@@ -7,19 +7,16 @@ from datetime import timedelta
 from pathlib import Path
 
 from simulator.model import Config, Environment
-from simulator.quality import QualityConfig, check
+from simulator.quality import QualityConfig, check, quality_code
 
-SCENARIOS = (
+SENSOR_MODES = (
     "NORMAL",
-    "HIGH_NH3",
     "SENSOR_DISCONNECTED",
     "SENSOR_TIMEOUT",
     "SENSOR_DRIFT",
     "INVALID_READING",
-    "NETWORK_OFFLINE",
-    "STORAGE_FAILURE",
-    "RECOVERY",
 )
+ENVIRONMENT_MODES = ("NORMAL", "HIGH_NH3")
 LOG = logging.getLogger(__name__)
 
 
@@ -43,8 +40,9 @@ class Twin:
         self.local_pending: dict[int, dict] = {}
         self.local_ids: set[int] = set()
         self.log_path = log_path
-        self.scenario = "NORMAL"
-        self.scenario_start = 0
+        self.sensor_mode = "NORMAL"
+        self.environment_mode = "NORMAL"
+        self.sensor_start = 0
         self.network = "ONLINE"
         self.storage = "OK"
         self.retries = 0
@@ -58,27 +56,54 @@ class Twin:
         self.events.append(asdict(Event(timestamp.isoformat(), severity, kind, description)))
         LOG.info("%s: %s", kind, description)
 
-    def set_scenario(self, scenario: str) -> None:
-        if scenario not in SCENARIOS:
-            raise ValueError(f"Unknown scenario: {scenario}")
-        self.scenario = scenario
-        self.scenario_start = len(self.records)
-        if scenario == "NETWORK_OFFLINE":
-            self.network = "OFFLINE"
-            if self.outage_start is None:
-                self.outage_start = len(self.records)
-        elif scenario == "STORAGE_FAILURE":
-            self.storage = "FAILED"
-        elif scenario == "RECOVERY":
-            self.network, self.storage = "ONLINE", "OK"
-            self.event(
-                "INFO", "RECOVERY", "Recovery requested; pending records await next service cycle."
-            )
+    def set_sensor(self, mode: str) -> None:
+        if mode not in SENSOR_MODES:
+            raise ValueError(f"Unknown sensor mode: {mode}")
+        if mode == self.sensor_mode:
+            return
+        old, self.sensor_mode = self.sensor_mode, mode
+        self.sensor_start = len(self.records)
         self.event(
-            "INFO" if scenario in ("NORMAL", "RECOVERY") else "WARNING",
-            scenario,
-            f"Scenario changed to {scenario}.",
+            "INFO" if mode == "NORMAL" else "WARNING",
+            "SENSOR_STATE",
+            f"Gas sensor mode: {old} -> {mode}.",
         )
+
+    def set_environment(self, mode: str) -> None:
+        if mode not in ENVIRONMENT_MODES:
+            raise ValueError(f"Unknown environment mode: {mode}")
+        if mode != self.environment_mode:
+            old, self.environment_mode = self.environment_mode, mode
+            self.event("INFO", "ENVIRONMENT_STATE", f"Synthetic environment: {old} -> {mode}.")
+
+    def set_network(self, online: bool) -> None:
+        target = "ONLINE" if online else "OFFLINE"
+        if target == self.network:
+            return
+        old, self.network = self.network, target
+        if not online and self.outage_start is None:
+            self.outage_start = len(self.records)
+        self.event(
+            "INFO" if online else "WARNING",
+            "NETWORK_STATE",
+            f"Network: {old} -> {target}; pending telemetry is serviced at the next sample.",
+        )
+
+    def set_storage(self, healthy: bool) -> None:
+        target = "OK" if healthy else "FAILED"
+        if target != self.storage:
+            old, self.storage = self.storage, target
+            self.event(
+                "INFO" if healthy else "ERROR",
+                "STORAGE_STATE",
+                f"Storage: {old} -> {target}; restored writes are checked at the next sample.",
+            )
+
+    def restore_all(self) -> None:
+        """Explicitly restore sensor and infrastructure; leave environmental conditions unchanged."""
+        self.set_sensor("NORMAL")
+        self.set_network(True)
+        self.set_storage(True)
 
     def _persist(self, record: dict) -> bool:
         if self.storage != "OK":
@@ -93,7 +118,7 @@ class Twin:
                         writer.writeheader()
                     writer.writerow(record)
             except OSError as exc:
-                self.storage = "FAILED"
+                self.set_storage(False)
                 self.event("ERROR", "STORAGE_FAILURE", f"Local write failed: {exc}")
                 return False
         self.local_ids.add(record["sequence"])
@@ -105,10 +130,10 @@ class Twin:
             raise ValueError("Step count must be positive.")
         for _ in range(count):
             index = len(self.records)
-            values = self.environment.sample(index, self.scenario == "HIGH_NH3")
+            values = self.environment.sample(index, self.environment_mode == "HIGH_NH3")
             sensor = "OK"
-            if self.scenario in ("SENSOR_DISCONNECTED", "SENSOR_TIMEOUT"):
-                sensor = "DISCONNECTED" if self.scenario == "SENSOR_DISCONNECTED" else "TIMEOUT"
+            if self.sensor_mode in ("SENSOR_DISCONNECTED", "SENSOR_TIMEOUT"):
+                sensor = "DISCONNECTED" if self.sensor_mode == "SENSOR_DISCONNECTED" else "TIMEOUT"
                 for key in ("nh3_raw_ppm", "gas_raw"):
                     values[key] = None
                 self.retries += 1
@@ -117,10 +142,10 @@ class Twin:
                     "SENSOR_RETRY",
                     f"Gas acquisition failed ({sensor}); retry next sample.",
                 )
-            elif self.scenario == "INVALID_READING":
+            elif self.sensor_mode == "INVALID_READING":
                 values["nh3_raw_ppm"] = float("nan")
-            elif self.scenario == "SENSOR_DRIFT":
-                values["nh3_raw_ppm"] += (index - self.scenario_start + 1) * 0.3
+            elif self.sensor_mode == "SENSOR_DRIFT":
+                values["nh3_raw_ppm"] += (index - self.sensor_start + 1) * 0.3
             record = dict(
                 timestamp=(
                     self.config.start + timedelta(seconds=index * self.config.interval_s)
@@ -129,21 +154,28 @@ class Twin:
                 sequence=index,
                 **values,
                 nh3_calibrated_ppm=None,
-                sensor_status=sensor,
+                sensor_status="OK" if sensor == "OK" else "DEGRADED",
+                environmental_sensor_status="OK",
+                gas_channel_status=sensor,
+                timestamp_status="SIMULATED_UTC",
                 network_status=self.network,
                 storage_status=self.storage,
-                quality_flag="",
+                quality_flags="",
                 buffered=self.network != "ONLINE",
-                scenario=self.scenario,
+                scenario=self.environment_mode,
+                sensor_mode=self.sensor_mode,
                 simulated=True,
             )
-            record["quality_flag"] = check(record, self.records, self.quality)
+            record["quality_flags"] = check(record, self.records, self.quality)
+            record["quality_code"] = quality_code(record["quality_flags"])
             if not self._persist(record):
                 record["storage_status"] = "FAILED"
                 self.local_pending[index] = record.copy()
             self.pending[index] = record.copy()
             if self.network == "ONLINE":
                 backlog = sum(r["buffered"] for r in self.pending.values())
+                if self.delivered.keys() & self.pending.keys():
+                    raise RuntimeError("Duplicate sequence would overwrite a received record.")
                 self.delivered.update(self.pending)
                 self.pending.clear()
                 if self.outage_start is not None:
@@ -151,7 +183,7 @@ class Twin:
                     self.event(
                         "INFO",
                         "SYNCHRONIZED",
-                        f"Simulated receiver acknowledged {backlog} buffered records; no gaps.",
+                        f"Simulated receiver acknowledged {backlog} buffered records in this controlled session.",
                     )
                     self.outage_start = None
             if self.storage == "OK" and self.local_pending:
