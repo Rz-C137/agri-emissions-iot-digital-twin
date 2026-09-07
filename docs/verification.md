@@ -16,7 +16,13 @@ The default calibration remains an affine chronological holdout: 2,592 training 
 
 ## Verified in CI
 
-The workflow runs Python tests, lint, formatting, dataset generation, the native quality/serialization/queue test and ESP32 compilation. Execution status for this revision is pending publication and inspection; configuration alone is not a passing result.
+GitHub Actions [run 34161935117](https://github.com/Rz-C137/agri-emissions-iot-digital-twin/actions/runs/34161935117) passed for implementation commit `1b61a3086e6c277654d9e82f3704418cddb4f90a`. Both jobs completed successfully:
+
+- Python tests, lint, formatting and deterministic dataset generation.
+- Native C++ compilation and execution of quality, serialization, timestamp and bounded-queue assertions on the Linux runner.
+- ESP32 PlatformIO compilation.
+
+These results were read from the actual job/step outcomes. This record identifies the tested implementation commit; a subsequent documentation-only commit records the evidence without claiming that it was the input to this run.
 
 ## Verified in Wokwi
 

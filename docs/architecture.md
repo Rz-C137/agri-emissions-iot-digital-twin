@@ -49,22 +49,32 @@ flowchart LR
     Main --> State[SystemState counters and health]
 ```
 
-The five-second acquisition interval respects the slow DHT22 interface. A failed sensor read is retried on the next acquisition. Network connection attempts occur every ten seconds with a bounded MQTT socket timeout; this cooperative loop is not hard real-time. Storage remounts are retried every ten seconds. The status LED indicates sensor and storage health; MQTT state is reported separately.
+The five-second acquisition interval respects the slow DHT22 interface. A failed sensor read is retried on the next acquisition. Network connection attempts occur every ten seconds with a bounded MQTT socket timeout; this cooperative loop is not hard real-time. Storage remounts are retried every ten seconds. The status LED indicates DHT acquisition and storage health, not verified gas-sensor health; MQTT state is reported separately.
 
 ## Fault recovery
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Normal
-    Normal --> NetworkOffline: inject outage
-    NetworkOffline --> Buffering: acquisition continues
-    Buffering --> Synchronizing: restore network only
-    Synchronizing --> Normal: simulated acknowledgement
-    Normal --> SensorFault: disconnect / timeout
-    SensorFault --> SensorFault: retry next acquisition
-    SensorFault --> Normal: restore sensor and successful read
-    Normal --> StorageFault: write failure
-    StorageFault --> Normal: restore storage and pending writes succeed
+    state IndependentDimensions {
+        state Network {
+            [*] --> Online
+            Online --> Offline: disconnect network
+            Offline --> Online: restore network only / service backlog
+        }
+        --
+        state Storage {
+            [*] --> Writable
+            Writable --> Failed: fail storage / write error
+            Failed --> Writable: restore storage only / verify writes
+        }
+        --
+        state GasAcquisition {
+            [*] --> Available
+            Available --> Faulted: apply gas fault
+            Faulted --> Faulted: retry next sample
+            Faulted --> Available: restore sensor
+        }
+    }
 ```
 
 The diagram summarizes transitions; network, storage, gas-acquisition mode and environmental conditions are independent. Restore sensor, restore network and restore storage affect only that dimension. Restore all faults is explicit and leaves the environment unchanged. Each actual transition logs old and new states; repeated identical requests do not reset drift or outage timers. Physical disconnection and recovery are not inferred by the Python engine.
