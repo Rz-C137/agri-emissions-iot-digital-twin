@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "author": "Agri Emissions IoT Digital Twin",
+  "editor": "wokwi",
+  "parts": [
+    {"type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {}},
+    {"type": "wokwi-dht22", "id": "dht", "top": -70, "left": 210, "attrs": {"temperature": "22", "humidity": "65"}},
+    {"type": "wokwi-gas-sensor", "id": "gas", "top": 90, "left": 220, "attrs": {"ppm": "400"}},
+    {"type": "wokwi-microsd-card", "id": "sd", "top": 220, "left": 220, "attrs": {}},
+    {"type": "wokwi-resistor", "id": "pullup", "top": -90, "left": 125, "attrs": {"value": "10000"}}
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["dht:VCC", "esp:3V3", "red", []],
+    ["dht:GND", "esp:GND.1", "black", []],
+    ["dht:SDA", "esp:D4", "green", []],
+    ["pullup:1", "esp:3V3", "red", []],
+    ["pullup:2", "dht:SDA", "green", []],
+    ["gas:VCC", "esp:VIN", "red", []],
+    ["gas:GND", "esp:GND.1", "black", []],
+    ["gas:AO", "esp:D34", "blue", []],
+    ["sd:VCC", "esp:3V3", "red", []],
+    ["sd:GND", "esp:GND.1", "black", []],
+    ["sd:CS", "esp:D5", "orange", []],
+    ["sd:SCK", "esp:D18", "green", []],
+    ["sd:DO", "esp:D19", "blue", []],
+    ["sd:DI", "esp:D23", "purple", []]
+  ]
+}

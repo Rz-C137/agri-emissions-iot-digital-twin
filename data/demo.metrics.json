@@ -1,0 +1,23 @@
+{
+  "slope": 0.9997670801063592,
+  "intercept": -1.9712293763767588,
+  "train_rows": 2592,
+  "fit_pairs": 2565,
+  "validation_rows": 1728,
+  "raw": {
+    "bias_ppm": 2.1056890995854634,
+    "MAE_ppm": 2.1057728018694117,
+    "RMSE_ppm": 2.218295456686466,
+    "R2": 0.11834064917690668,
+    "completeness_pct": 100.0,
+    "missing_pct": 0.0
+  },
+  "calibrated": {
+    "bias_ppm": 0.1318327778181255,
+    "MAE_ppm": 0.5665285294487208,
+    "RMSE_ppm": 0.7101589308938641,
+    "R2": 0.909640640325876,
+    "completeness_pct": 100.0,
+    "missing_pct": 0.0
+  }
+}
