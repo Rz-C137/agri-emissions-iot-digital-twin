@@ -46,3 +46,6 @@ The Python fault engine is richer than the firmware. No automatic browser fault 
 The revised wire/CSV contract is documented in [schema.md](../docs/schema.md): numeric `quality_code`, readable pipe-separated `quality_flags`, separate environmental/gas/aggregate status and explicit timestamp provenance. Gas ADC acquisition leaves health UNVERIFIED, including at zero or a static count. No analog wiring-fault detection is claimed. New logs use `/measurements-v2.csv`.
 
 The native test now checks quality names, missing/nonfinite JSON, unsynchronized and synchronized timestamps, serialization truncation, and bounded-queue overflow/FIFO behavior. A full queue rejects the new telemetry record without replacing an older one. The SD copy exists only if that sample's local write succeeded. QoS 0 publish does not establish end-to-end delivery acknowledgement; queued telemetry remains volatile.
+# Optional Modbus reference client
+
+See [the shared Python/C++ protocol contract](../docs/modbus_firmware.md) for the host-tested FC03 parser and UART2 transport. The default build keeps RS-485 disabled. Build the optional path with `python -m platformio run -d firmware -e esp32dev_rs485`. It emits separate serial reference diagnostics; no physical bus test or CSV/MQTT reference integration is claimed.

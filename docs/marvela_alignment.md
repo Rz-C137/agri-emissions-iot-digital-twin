@@ -13,7 +13,7 @@ The [official ATB job advertisement](https://www.leibniz-gemeinschaft.de/en/care
 | Need | Inspectable evidence | Boundary / next physical gate |
 | --- | --- | --- |
 | Modular electronics and acquisition | Existing C++ sensor, logger, quality and telemetry modules | Compiles; physical commissioning remains |
-| Device interfaces | SPI SD and digital/ADC firmware; new FC03 Modbus RTU byte emulator | No physical RS-485 or I²C driver added |
+| Device interfaces | Host-tested Modbus RTU protocol logic in Python and ESP32 C++; optional UART2 transport | Physical RS-485 electrical commissioning remains future work; no I²C driver added |
 | Continuous records and failures | Independent live-twin faults; new SQLite spool/reopen/idempotent receiver tests | SQLite is desktop disk, not ESP32 flash |
 | Agricultural gases | New NH3, CH4, N2O register channels; barn/manure synthetic contexts | Fixtures, not mechanistic farm models or gas-selective hardware |
 | Reference comparison | Chronological NH3 holdout, exported coefficients/hash, Bland–Altman view | Virtual reference is not a certified analyzer |
@@ -63,12 +63,12 @@ Use GPIO labels, not the physical row positions of a board photograph. See [real
 | MQ-2 AO | 34 / ADC1 | Implemented only as simulator analog surrogate; direct 5 V-module AO is not approved physical wiring |
 | microSD SCK / MISO / MOSI / CS | 18 / 19 / 23 / 5 | Implemented SPI, compatible 3.3 V module; check GPIO5 strapping at startup |
 | I²C SDA / SCL | 21 / 22 | Reserved proposal; pull-ups to 3.3 V sized for actual bus capacitance; no I²C instrument simulated |
-| UART2 TX / RX | 17 / 16 | Proposed industrial extension, not connected by current firmware |
-| RS-485 driver direction | 27 | Proposed combined DE and active-low RE control |
+| UART2 TX / RX | 17 / 16 | Optional firmware UART2 transport; disabled by default |
+| RS-485 driver direction | 27 | Optional firmware combined DE and active-low RE control |
 
 For a **proposed MAX3485** 3.3 V transceiver, TX17 goes to DI (package pin 4), RO (pin 1) to RX16, GPIO27 to DE (pin 3) and active-low RE (pin 2). LOW receives, HIGH transmits. VCC pin 8 goes to 3.3 V, GND pin 5 to logic return, with local decoupling. A pin 6 and B pin 7 form the differential pair. This plan comes from the [Analog Devices datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/MAX3483-MAX3491.pdf), not MARVELA. It requires a physical bench check; do not substitute a 5 V transceiver breakout without verifying logic levels.
 
-Use twisted pair and terminate only at the two physical bus ends with resistance matched to cable impedance (often 120 Ω). Establish idle bias at one designed location; check transceiver common-mode limits, surge protection, grounding and isolation for farm cabling. A/B vendor naming can differ: verify signal polarity from both datasheets. In a real UART implementation, release DE only after the last stop bit, enforce RTU frame spacing and configure matching baud/parity; these timing behaviors are not modeled by the byte emulator. Proposed starting configuration: 9600 baud, 8E1, unit 1, confirmed against the actual instrument manual.
+Use twisted pair and terminate only at the two physical bus ends with resistance matched to cable impedance (often 120 Ω). Establish idle bias at one designed location; check transceiver common-mode limits, surge protection, grounding and isolation for farm cabling. A/B vendor naming can differ: verify signal polarity from both datasheets. In a real UART implementation, release DE only after the last stop bit, enforce RTU frame spacing and configure matching baud/parity; the optional firmware handles TX completion and frame gaps, but physical timing is unmeasured. Proposed starting configuration: 9600 baud, 8E1, unit 1, confirmed against the actual instrument manual.
 
 RS-485 is the electrical link; Modbus defines messages and register meaning. The ESP32 UART needs the external transceiver. I²C is intended for short local sensor connections; SPI serves the local SD; neither replaces the farm cable interface.
 
@@ -91,3 +91,7 @@ These are proposed engineering stages, not completed experiments or an official 
 7. **Challenge reliability.** Disconnect reference/network/storage, corrupt frames, restart after commit, remove power under controlled conditions and document lost IDs. Measure outage and post-restoration backlog time separately. Gate: loss/recovery accounting and explicit limits, not a blanket zero-loss claim.
 8. **Pilot in livestock and manure settings.** Agree placement, sampling lines, co-location, maintenance, clock checks, metadata and pre/post checks with farm partners. Record operational events and environmental context. Gate: pilot review before wider deployment; real campaign datasets stay distinct from this synthetic repository.
 9. **Handover and report.** Deliver versioned schemas, wiring, firmware, calibration artifacts, QA decisions, deviations and analysis scripts with an owner/date/action issue log. Review interpretation jointly and draft methods/results from actual evidence. Publications and partner coordination remain future work, not portfolio experience claims.
+
+## Firmware protocol bridge
+
+The same narrow FC03 contract now has a host-testable C++ parser/client and an optional UART2 adapter. See [the shared protocol contract and enablement instructions](modbus_firmware.md). Protocol tests do not validate the RS-485 electrical bus.

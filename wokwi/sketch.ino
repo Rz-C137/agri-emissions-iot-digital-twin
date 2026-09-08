@@ -5,6 +5,10 @@
 #include "Logger.h"
 #include "Telemetry.h"
 #include "FaultManager.h"
+#if AGRI_ENABLE_RS485
+#include "Rs485Transport.h"
+Rs485Transport referenceBus;
+#endif
 
 Sensors sensors;
 Logger logger;
@@ -16,6 +20,9 @@ void setup() {
     Serial.begin(115200);
     pinMode(Config::LED_PIN, OUTPUT);
     sensors.begin();
+#if AGRI_ENABLE_RS485
+    referenceBus.begin(Config::RS485_BAUD, SERIAL_8E1);
+#endif
     state.storage = logger.begin();
     telemetry.begin();
     configTime(0, 0, "pool.ntp.org");
@@ -42,6 +49,13 @@ void loop() {
         }
         Serial.println(Logger::csv(m));
         digitalWrite(Config::LED_PIN, m.environmental_sensor_ok && state.storage);
+#if AGRI_ENABLE_RS485
+        const auto reference = ModbusRtu::poll(referenceBus, Config::RS485_TIMEOUT_MS);
+        Serial.printf("# MODBUS_REFERENCE,sequence=%lu,status=%s", static_cast<unsigned long>(m.sequence), ModbusRtu::statusName(reference.status));
+        if (reference.status == ModbusRtu::Status::OK)
+            Serial.printf(",nh3_ppm=%.2f,ch4_ppm=%.2f,n2o_ppm=%.3f", reference.nh3, reference.ch4, reference.n2o);
+        Serial.println();
+#endif
     }
     if (!state.storage && now - lastStorageRetry >= Config::RETRY_MS) {
         lastStorageRetry = now;

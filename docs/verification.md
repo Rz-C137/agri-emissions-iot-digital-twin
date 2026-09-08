@@ -57,3 +57,12 @@ Python pending queues are volatile and CSV is not automatically replayed after r
 - Ruff lint and format checks passed. The generated validation example reloads coefficients before holdout application; raw/calibrated RMSE is 2.2183/0.7102 ppm for synthetic NH3.
 - Headless Edge rendered the commissioning campaign and both real component photos. Hardware page had no horizontal page overflow at widths 1366, 760 and 390 pixels; no browser page errors were observed. The new screenshot is an actual local dashboard capture.
 - No new physical hardware, RS-485 electrical/timing test, MQTT broker test, flash power-loss test or farm campaign was performed. Existing firmware was not modified in this extension.
+# Optional firmware Modbus bridge — local verification, 8 September 2026
+
+- `python -m pytest -q`: 23 passed, 1 skipped locally. The skip is the native Modbus compile/run because this Windows environment has no host g++/clang++; Linux CI requires a compiler and executes it.
+- `python -m ruff check .` and `python -m ruff format --check .`: passed.
+- `python -m platformio run -d firmware -e esp32dev -e esp32dev_rs485`: both builds passed. Default RAM/flash: 51,564/829,641 bytes; optional RS-485: 51,580/831,213 bytes.
+- `python -m simulator.campaign`: 120 stored, 110 valid references, 10 reference faults, zero pending after recovery.
+- Dashboard AppTest exercised all ten pages; the running local Streamlit health endpoint returned `ok`.
+- `python wokwi/export.py` refreshed browser sketch copies with the RS-485 path disabled by default. No Wokwi runtime or physical serial bus test was performed.
+- Native cases and the cross-language wire contract are described in [Modbus firmware](modbus_firmware.md). UART electrical levels, direction timing, cable termination/bias and physical reference operation remain unmeasured. Reference output is a separate serial diagnostic, not part of the existing CSV/MQTT pipeline.

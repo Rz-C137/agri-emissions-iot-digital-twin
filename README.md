@@ -6,12 +6,6 @@ I use this synthetic prototype to demonstrate reliable environmental acquisition
 
 **Research-focused extension:** [MARVELA / ATB requirement mapping and laboratory-to-farm workflow](docs/marvela_alignment.md), a three-gas **Modbus RTU commissioning bench**, durable local recovery tests, and [an eight-minute interview route](docs/interview_walkthrough.md). This is an independent portfolio response to public needs, not a MARVELA deliverable.
 
-| Real ESP32 component example | Real DHT22 component example |
-| --- | --- |
-| <img src="docs/figures/photos/esp32.jpg" alt="Real ESP32 development board, photograph by Edwiyanto" width="240"> | <img src="docs/figures/photos/dht22.jpg" alt="Real DHT22 sensor, photograph by L293D" width="380"> |
-
-*Third-party component photographs, not my assembled prototype. Edwiyanto / L293D, CC BY-SA 4.0; [sources and licenses](docs/figures/photos/ATTRIBUTION.md). Use the wiring diagram and GPIO labels for connections.*
-
 ![Synthetic monitoring dashboard and live system state](docs/figures/dashboard_overview.png)
 
 *Local Python dashboard: synthetic measurements, independent faults and current state. No physical farm data.*
@@ -29,6 +23,7 @@ I use this synthetic prototype to demonstrate reliable environmental acquisition
 ## What this prototype demonstrates
 
 - Embedded data acquisition and sensor interfacing: DHT22 digital readings, analog gas-surrogate ADC readings and SPI microSD logging.
+- [Shared Python/C++ Modbus RTU client contract](docs/modbus_firmware.md): host-tested protocol logic and an optional ESP32 UART2 transport, disabled by default; physical RS-485 commissioning remains future work.
 - IoT communication: offline queue simulation, optional TLS MQTT publishing and separate ESP32 MQTT firmware.
 - Resilient logging and fault handling: local acquisition during simulated network failure, visible pending records, synchronization and retry events.
 - Digital-twin state monitoring: sensor, network, storage and data-quality states, including concurrent infrastructure faults.

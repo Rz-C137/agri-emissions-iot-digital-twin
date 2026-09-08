@@ -2,7 +2,7 @@
 
 I kept the existing ESP32 acquisition demonstration because the advertisement does not prescribe a board. Replacing working modules with a longer component list would not establish measurement competence.
 
-I added a narrow Modbus RTU reference emulator because industrial messages, register scaling, CRC rejection and missing-response handling are independently testable. Its register map is explicitly my fixture. I documented UART/RS-485 wiring separately rather than implying that a Python packet test validates electrical behavior.
+I added a narrow Modbus RTU reference emulator because industrial messages, register scaling, CRC rejection and missing-response handling are independently testable. Its register map is explicitly my fixture. I implemented the matching C++ protocol client and optional UART2 adapter, retaining separate wiring documentation. Host tests establish protocol behavior; compiled UART code does not establish electrical behavior.
 
 I included N2O alongside NH3 and CH4 because it is part of MARVELA's published scope. The three-gas campaign exercises data handling, while the richer NH3 model remains the calibration benchmark. A single MQ-2 analog channel cannot provide selective measurements of these species.
 
