@@ -59,6 +59,8 @@ Python pending queues are volatile and CSV is not automatically replayed after r
 - No new physical hardware, RS-485 electrical/timing test, MQTT broker test, flash power-loss test or farm campaign was performed. Existing firmware was not modified in this extension.
 # Optional firmware Modbus bridge — local verification, 8 September 2026
 
+Remote confirmation: [GitHub Actions run 34275815446](https://github.com/Rz-C137/agri-emissions-iot-digital-twin/actions/runs/34275815446) passed both jobs for implementation commit `81ff0f9`. Linux ran all 24 pytest cases, including compilation/execution of the native C++ Modbus runner; the existing native C++ quality test also passed. Both default and RS-485-enabled ESP32 builds passed in CI. The Windows-only native-test skip below does not represent a missing CI check.
+
 - `python -m pytest -q`: 23 passed, 1 skipped locally. The skip is the native Modbus compile/run because this Windows environment has no host g++/clang++; Linux CI requires a compiler and executes it.
 - `python -m ruff check .` and `python -m ruff format --check .`: passed.
 - `python -m platformio run -d firmware -e esp32dev -e esp32dev_rs485`: both builds passed. Default RAM/flash: 51,564/829,641 bytes; optional RS-485: 51,580/831,213 bytes.
