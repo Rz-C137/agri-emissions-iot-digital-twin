@@ -1,0 +1,11 @@
+{
+  "schema": "affine-nh3-v1",
+  "units": "ppm",
+  "provenance": "SYNTHETIC",
+  "source_sha256": "0c74ea0a6a689207c5320eb0ff9f6f1fd322f1afd3118809adea3a8a497dc35c",
+  "training_start": "2026-01-01T00:00:00+00:00",
+  "training_end": "2026-01-02T19:11:00+00:00",
+  "slope": 0.9997670801063592,
+  "intercept": -1.9712293763767588,
+  "scope": "Default synthetic NH3 model only; not physical sensor coefficients"
+}

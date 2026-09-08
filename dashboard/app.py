@@ -12,6 +12,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from dashboard.commissioning import commissioning_page  # noqa: E402
 from dashboard.hardware import glance, hardware_page  # noqa: E402
 from simulator.engine import SENSOR_MODES, Twin  # noqa: E402
 from simulator.health import assess  # noqa: E402
@@ -44,6 +45,7 @@ with st.sidebar:
             "Live Monitoring",
             "System Architecture",
             "Virtual Hardware",
+            "Commissioning Bench",
             "Fault Injection",
             "Data Quality",
             "Calibration & Validation",
@@ -221,6 +223,9 @@ def content() -> None:
     elif page == "Virtual Hardware":
         hardware_page(ROOT)
 
+    elif page == "Commissioning Bench":
+        commissioning_page(ROOT)
+
     elif page == "System Architecture":
         stages = [
             "Livestock environment\nSynthetic conditions",
@@ -310,6 +315,20 @@ def content() -> None:
         )
         v = calibrated[calibrated.split == "Validation"].copy()
         v["Residual (ppm)"] = v.nh3_calibrated_ppm - v.nh3_reference_ppm
+        v["Pair mean (ppm)"] = (v.nh3_calibrated_ppm + v.nh3_reference_ppm) / 2
+        agreement = px.scatter(
+            v,
+            x="Pair mean (ppm)",
+            y="Residual (ppm)",
+            title="Bland–Altman: descriptive holdout agreement",
+        )
+        bias, spread = v["Residual (ppm)"].mean(), v["Residual (ppm)"].std()
+        for level in (bias, bias - 1.96 * spread, bias + 1.96 * spread):
+            agreement.add_hline(y=level, line_dash="dash")
+        st.plotly_chart(agreement, width="stretch")
+        st.caption(
+            "Mean difference ± 1.96 sample SD. Descriptive limits, not confidence intervals or acceptance criteria; time dependence and reference uncertainty remain."
+        )
         line(
             v,
             ["nh3_raw_ppm", "nh3_calibrated_ppm", "nh3_reference_ppm"],

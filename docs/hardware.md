@@ -16,6 +16,13 @@ MQ-2 is used only to demonstrate an analog gas-acquisition channel. It is not tr
 
 ## Physical front-end limitation
 
+### Real component examples
+
+<img src="figures/photos/esp32.jpg" width="240" alt="Real ESP32 board photographed by Edwiyanto">
+<img src="figures/photos/dht22.jpg" width="380" alt="Real DHT22 photographed by L293D">
+
+Photographs: Edwiyanto (ESP32), L293D (DHT22), CC BY-SA 4.0. [Original sources and license details](figures/photos/ATTRIBUTION.md). These show real components, not a project assembly. Physical board layouts vary; use GPIO labels. For the proposed UART2/MAX3485 RS-485 connection, reserved I²C pins and power checks, see the [industrial extension pin plan](marvela_alignment.md#pin-plan-implemented-node-and-proposed-industrial-extension).
+
 The virtual analog connection demonstrates the acquisition path. A physical implementation requires verification of sensor output voltage, ESP32 ADC input range, source impedance, filtering, protection and calibration. The direct 5 V-module AO connection is simulator-specific, not safe physical wiring by implication. Neither these figures nor Wokwi provide electrical validation. See [architecture](architecture.md) and [Wokwi notes](../wokwi/README.md).
 
 ![Conceptual measurement chain](figures/measurement_chain.svg)

@@ -42,6 +42,16 @@ def glance(twin, running: bool) -> None:
 
 def hardware_page(root: Path) -> None:
     pins = wiring()
+    with st.expander("Real component photographs", expanded=True):
+        left, right = st.columns(2)
+        left.image(str(root / "docs/figures/photos/esp32.jpg"), width=240)
+        right.image(str(root / "docs/figures/photos/dht22.jpg"), width="stretch")
+        st.caption(
+            "Real component examples, not my assembled prototype. ESP32: Edwiyanto; DHT22: L293D. CC BY-SA 4.0, unchanged originals from Wikimedia Commons. Board variants differ; use GPIO labels for wiring."
+        )
+        st.markdown(
+            "[Photograph sources and licenses](https://github.com/Rz-C137/agri-emissions-iot-digital-twin/blob/main/docs/figures/photos/ATTRIBUTION.md)"
+        )
     st.markdown(
         "<style>[data-testid=stTable] table{table-layout:fixed;width:100%}[data-testid=stTable] th,[data-testid=stTable] td{overflow-wrap:anywhere}</style>",
         unsafe_allow_html=True,

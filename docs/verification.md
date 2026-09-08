@@ -50,3 +50,10 @@ Python pending queues are volatile and CSV is not automatically replayed after r
 
 - After publication, GitHub's rendered README loaded all three landing images, and the hardware-reference page rendered all four SVGs with nonzero natural dimensions. Images were inspected through the actual GitHub pages, not only local previews.
 - GitHub Actions [run 34189586376](https://github.com/Rz-C137/agri-emissions-iot-digital-twin/actions/runs/34189586376) completed successfully for visual implementation commit `6ec4b96`: both Python and firmware jobs passed. A later evidence/screenshot-only commit records these observations.
+# MARVELA-focused extension verification — 8 September 2026
+
+- 22 Python tests passed, including all ten dashboard pages, a known Modbus CRC vector, register byte order, wrong-unit/CRC rejection, missing-reference preservation, committed-spool reopen, lost-ack deduplication, identity collisions and calibration artifact reload.
+- Both 120-sample barn/manure CLI campaigns completed: 120 stored, 110 valid reference records, 10 reference fault records, zero pending after delivery recovery. Replaying the same campaign retained unique records.
+- Ruff lint and format checks passed. The generated validation example reloads coefficients before holdout application; raw/calibrated RMSE is 2.2183/0.7102 ppm for synthetic NH3.
+- Headless Edge rendered the commissioning campaign and both real component photos. Hardware page had no horizontal page overflow at widths 1366, 760 and 390 pixels; no browser page errors were observed. The new screenshot is an actual local dashboard capture.
+- No new physical hardware, RS-485 electrical/timing test, MQTT broker test, flash power-loss test or farm campaign was performed. Existing firmware was not modified in this extension.
