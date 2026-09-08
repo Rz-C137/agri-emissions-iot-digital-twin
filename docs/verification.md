@@ -47,3 +47,6 @@ Python pending queues are volatile and CSV is not automatically replayed after r
 - README and hardware-reference image paths were checked on disk. Updated Overview and Hardware-page screenshots are actual local dashboard captures in `docs/figures/`.
 - A Wokwi browser upload was retried. The session again produced a React error and a 401 resource response without observable runtime/serial output. No `wokwi_runtime.png` is included or claimed.
 - The firmware and scientific model were not modified by this visual revision. Earlier build and CI evidence above refers to the named tested implementation, not a new physical test.
+
+- After publication, GitHub's rendered README loaded all three landing images, and the hardware-reference page rendered all four SVGs with nonzero natural dimensions. Images were inspected through the actual GitHub pages, not only local previews.
+- GitHub Actions [run 34189586376](https://github.com/Rz-C137/agri-emissions-iot-digital-twin/actions/runs/34189586376) completed successfully for visual implementation commit `6ec4b96`: both Python and firmware jobs passed. A later evidence/screenshot-only commit records these observations.
