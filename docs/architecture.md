@@ -98,3 +98,7 @@ flowchart LR
 ```
 
 Wokwi's direct AO-to-GPIO34 wire is simulator-specific, not this physical front end. Supply voltage, output range, ADC allowable input, source impedance, settling, filtering, protection, loading and calibration must be evaluated together before building hardware. ADC attenuation does not make a pin 5 V tolerant. See [analog-chain notes](../wokwi/README.md).
+
+## Hardware presentation
+
+See [virtual hardware and exact pin figures](hardware.md). The live **System at a Glance** dashboard area reflects Python session state; ESP32 and microSD are represented roles, not connected physical devices.

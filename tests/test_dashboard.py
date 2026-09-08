@@ -30,6 +30,7 @@ def test_dashboard_all_pages_and_independent_controls():
         "Overview",
         "Live Monitoring",
         "System Architecture",
+        "Virtual Hardware",
         "Data Quality",
         "Calibration & Validation",
         "Event Log",

@@ -37,3 +37,13 @@ These results were read from the actual job/step outcomes. This record identifie
 No ESP32 hardware, electrical interface, gas selectivity, calibration gases, reference traceability, farm campaign, response time, power-fail durability or laboratory accuracy was tested. Wokwi's direct AO connection is simulator-specific; a physical front end requires voltage-range, impedance, filtering, protection and calibration review.
 
 Python pending queues are volatile and CSV is not automatically replayed after restart. Firmware rejects new telemetry when its 120-slot queue is full; an SD copy exists only if the local write succeeded. QoS 0 does not establish end-to-end acknowledgement. UTC availability, analog sensor health and data-quality status are explicitly separate.
+
+
+## Visual and hardware-presentation revision — 2026-09-08
+
+- Four original SVGs were generated from checked wiring: hardware overview, exact pin connections, component reference and measurement chain. Browser rendering and text bounding-box collision checks passed for all four. These are configuration illustrations, not runtime or physical-validation images.
+- The added Virtual Hardware page loads in Streamlit. The Python test suite remains **17 passed**, including navigation to all nine pages; Ruff lint and formatting passed.
+- Headless Edge loaded the hardware assets and checked 1600, 1366, 760 and 390 pixel layouts with no page-level horizontal overflow or page errors. Fine pin labels should be opened/downloaded at full size on small screens. Overview cards were exercised with network and storage faults and showed OFFLINE, WRITE FAILURE and the actual queued counts.
+- README and hardware-reference image paths were checked on disk. Updated Overview and Hardware-page screenshots are actual local dashboard captures in `docs/figures/`.
+- A Wokwi browser upload was retried. The session again produced a React error and a 401 resource response without observable runtime/serial output. No `wokwi_runtime.png` is included or claimed.
+- The firmware and scientific model were not modified by this visual revision. Earlier build and CI evidence above refers to the named tested implementation, not a new physical test.

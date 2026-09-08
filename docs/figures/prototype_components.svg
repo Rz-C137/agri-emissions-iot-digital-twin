@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="710" viewBox="0 0 1400 710" role="img" aria-labelledby="title desc">
+<title id="title">Prototype components · roles and interfaces</title><desc id="desc">Original schematic-style illustrations; component shapes and connector locations are illustrative.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#193948} .small{fill:#516b77}</style>
+<rect x="0" y="0" width="1400" height="710" rx="0" fill="#f5f8fa" stroke="none"/>
+<text x="36" y="44" font-size="26" font-weight="bold" text-anchor="start">Prototype components · roles and interfaces</text>
+<text x="36" y="73" font-size="15" font-weight="normal" text-anchor="start">Original schematic-style illustrations; component shapes and connector locations are illustrative.</text>
+<rect x="30" y="112" width="315" height="485" rx="10" fill="#fff" stroke="#dce5eb"/>
+<text x="50" y="148" font-size="23" font-weight="bold" text-anchor="start">ESP32 DevKit</text>
+<rect x="97" y="176" width="180" height="210" rx="10" fill="#23434e" stroke="#132e37"/>
+<rect x="131" y="200" width="112" height="126" rx="10" fill="#cad5db" stroke="#94a8b1"/>
+<rect x="147" y="211" width="80" height="35" rx="2" fill="#294853" stroke="none"/>
+<polyline points="157,238 157,218 167,218 167,238" fill="none" stroke="#ccba75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="177,238 177,218 187,218 187,238" fill="none" stroke="#ccba75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="197,238 197,218 207,218 207,238" fill="none" stroke="#ccba75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="217,238 217,218 227,218 227,238" fill="none" stroke="#ccba75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="187.0" y="288" font-size="25" font-weight="bold" text-anchor="middle">ESP32</text>
+<text x="187.0" y="315" font-size="14" font-weight="normal" text-anchor="middle">WiFi · ADC · SPI</text>
+<rect x="163.0" y="337" width="48" height="35" rx="3" fill="#c8d4da" stroke="#829ba7"/>
+<rect x="171.0" y="346" width="32" height="17" rx="2" fill="#304b56" stroke="none"/>
+<rect x="105" y="194" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="194" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="214" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="214" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="234" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="234" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="254" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="254" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="274" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="274" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="294" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="294" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="314" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="314" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="334" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="334" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="105" y="354" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<rect x="259" y="354" width="10" height="9" rx="1" fill="#ddc775" stroke="none"/>
+<text x="50" y="425" font-size="18" font-weight="bold" text-anchor="start">Microcontroller and</text>
+<text x="50" y="448" font-size="18" font-weight="bold" text-anchor="start">acquisition node</text>
+<text x="50" y="505" font-size="15" font-weight="normal" text-anchor="start">GPIO4 · GPIO34</text>
+<text x="50" y="531" font-size="15" font-weight="normal" text-anchor="start">SPI: GPIO5 / 18 / 19 / 23</text>
+<text x="50" y="557" font-size="15" font-weight="normal" text-anchor="start">3V3 · VIN · GND</text>
+<rect x="375" y="112" width="315" height="485" rx="10" fill="#fff" stroke="#dce5eb"/>
+<text x="395" y="148" font-size="23" font-weight="bold" text-anchor="start">DHT22</text>
+<rect x="442" y="176" width="180" height="210" rx="10" fill="#fff" stroke="#b8c6cc"/>
+<rect x="462" y="201" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="219" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="237" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="255" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="273" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="291" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="309" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<rect x="462" y="327" width="140" height="7" rx="3" fill="#d1dce1" stroke="none"/>
+<text x="532.0" y="364" font-size="19" font-weight="bold" text-anchor="middle">DHT22</text>
+<text x="395" y="425" font-size="18" font-weight="bold" text-anchor="start">Virtual temperature and</text>
+<text x="395" y="448" font-size="18" font-weight="bold" text-anchor="start">relative-humidity sensor</text>
+<text x="395" y="505" font-size="15" font-weight="normal" text-anchor="start">VCC · DATA · NC · GND</text>
+<text x="395" y="531" font-size="15" font-weight="normal" text-anchor="start">DATA has a 10 kΩ pull-up</text>
+<text x="395" y="557" font-size="15" font-weight="normal" text-anchor="start">NC is not connected</text>
+<rect x="720" y="112" width="315" height="485" rx="10" fill="#fff" stroke="#dce5eb"/>
+<text x="740" y="148" font-size="23" font-weight="bold" text-anchor="start">MQ-2</text>
+<rect x="787" y="176" width="180" height="210" rx="10" fill="#214e70" stroke="#193c58"/>
+<circle cx="877.0" cy="258" r="64" fill="#c4d0d6"/>
+<circle cx="877.0" cy="258" r="53" fill="#e1e8ec"/>
+<circle cx="845.0" cy="226" r="2" fill="#a2b3bc"/>
+<circle cx="845.0" cy="238" r="2" fill="#a2b3bc"/>
+<circle cx="845.0" cy="250" r="2" fill="#a2b3bc"/>
+<circle cx="845.0" cy="262" r="2" fill="#a2b3bc"/>
+<circle cx="845.0" cy="274" r="2" fill="#a2b3bc"/>
+<circle cx="845.0" cy="286" r="2" fill="#a2b3bc"/>
+<circle cx="857.0" cy="226" r="2" fill="#a2b3bc"/>
+<circle cx="857.0" cy="238" r="2" fill="#a2b3bc"/>
+<circle cx="857.0" cy="250" r="2" fill="#a2b3bc"/>
+<circle cx="857.0" cy="262" r="2" fill="#a2b3bc"/>
+<circle cx="857.0" cy="274" r="2" fill="#a2b3bc"/>
+<circle cx="857.0" cy="286" r="2" fill="#a2b3bc"/>
+<circle cx="869.0" cy="226" r="2" fill="#a2b3bc"/>
+<circle cx="869.0" cy="238" r="2" fill="#a2b3bc"/>
+<circle cx="869.0" cy="250" r="2" fill="#a2b3bc"/>
+<circle cx="869.0" cy="262" r="2" fill="#a2b3bc"/>
+<circle cx="869.0" cy="274" r="2" fill="#a2b3bc"/>
+<circle cx="869.0" cy="286" r="2" fill="#a2b3bc"/>
+<circle cx="881.0" cy="226" r="2" fill="#a2b3bc"/>
+<circle cx="881.0" cy="238" r="2" fill="#a2b3bc"/>
+<circle cx="881.0" cy="250" r="2" fill="#a2b3bc"/>
+<circle cx="881.0" cy="262" r="2" fill="#a2b3bc"/>
+<circle cx="881.0" cy="274" r="2" fill="#a2b3bc"/>
+<circle cx="881.0" cy="286" r="2" fill="#a2b3bc"/>
+<circle cx="893.0" cy="226" r="2" fill="#a2b3bc"/>
+<circle cx="893.0" cy="238" r="2" fill="#a2b3bc"/>
+<circle cx="893.0" cy="250" r="2" fill="#a2b3bc"/>
+<circle cx="893.0" cy="262" r="2" fill="#a2b3bc"/>
+<circle cx="893.0" cy="274" r="2" fill="#a2b3bc"/>
+<circle cx="893.0" cy="286" r="2" fill="#a2b3bc"/>
+<circle cx="905.0" cy="226" r="2" fill="#a2b3bc"/>
+<circle cx="905.0" cy="238" r="2" fill="#a2b3bc"/>
+<circle cx="905.0" cy="250" r="2" fill="#a2b3bc"/>
+<circle cx="905.0" cy="262" r="2" fill="#a2b3bc"/>
+<circle cx="905.0" cy="274" r="2" fill="#a2b3bc"/>
+<circle cx="905.0" cy="286" r="2" fill="#a2b3bc"/>
+<rect x="811" y="324" width="40" height="28" rx="3" fill="#e3d5a4" stroke="none"/>
+<circle cx="831" cy="338" r="7" fill="#667e8a"/>
+<text x="892.0" y="353" font-size="20" font-weight="bold" text-anchor="middle" style="fill:#fff">MQ-2</text>
+<text x="740" y="425" font-size="18" font-weight="bold" text-anchor="start">Virtual analog</text>
+<text x="740" y="448" font-size="18" font-weight="bold" text-anchor="start">gas-sensor surrogate</text>
+<text x="740" y="505" font-size="15" font-weight="normal" text-anchor="start">VCC · GND · DO · AO</text>
+<text x="740" y="531" font-size="15" font-weight="normal" text-anchor="start">AO → ADC; DO unused</text>
+<text x="740" y="557" font-size="15" font-weight="normal" text-anchor="start">No selective NH₃ measurement</text>
+<rect x="1065" y="112" width="315" height="485" rx="10" fill="#fff" stroke="#dce5eb"/>
+<text x="1085" y="148" font-size="23" font-weight="bold" text-anchor="start">microSD module</text>
+<rect x="1132" y="176" width="180" height="210" rx="10" fill="#254e64" stroke="#193c50"/>
+<rect x="1155" y="211" width="134" height="123" rx="4" fill="#cbd7de" stroke="#849aa6"/>
+<rect x="1170" y="224" width="104" height="43" rx="2" fill="#172f3b" stroke="none"/>
+<text x="1222.0" y="302" font-size="21" font-weight="bold" text-anchor="middle">microSD</text>
+<text x="1222.0" y="361" font-size="17" font-weight="normal" text-anchor="middle" style="fill:#fff">SPI storage</text>
+<text x="1085" y="425" font-size="18" font-weight="bold" text-anchor="start">Local CSV</text>
+<text x="1085" y="448" font-size="18" font-weight="bold" text-anchor="start">data logging</text>
+<text x="1085" y="505" font-size="15" font-weight="normal" text-anchor="start">VCC · GND · MISO · MOSI</text>
+<text x="1085" y="531" font-size="15" font-weight="normal" text-anchor="start">SCK · CS</text>
+<text x="1085" y="557" font-size="15" font-weight="normal" text-anchor="start">DO = MISO; DI = MOSI</text>
+<text x="36" y="644" font-size="18" font-weight="bold" text-anchor="start">MQ-2 is used only to demonstrate an analog gas-acquisition channel.</text>
+<text x="36" y="674" font-size="17" font-weight="normal" text-anchor="start">It is not treated as a selective NH₃ sensor. All component views describe a virtual prototype, not tested hardware.</text>
+</svg>

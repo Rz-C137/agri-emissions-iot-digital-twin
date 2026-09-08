@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="660" viewBox="0 0 1400 660" role="img" aria-labelledby="title desc">
+<title id="title">Measurement chain · acquire, retain, communicate</title><desc id="desc">Conceptual chain with separate implementations: Python offline twin and ESP32/Wokwi acquisition demonstrator.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#193948} .small{fill:#516b77}</style>
+<rect x="0" y="0" width="1400" height="660" rx="0" fill="#f5f8fa" stroke="none"/>
+<text x="36" y="44" font-size="26" font-weight="bold" text-anchor="start">Measurement chain · acquire, retain, communicate</text>
+<text x="36" y="73" font-size="15" font-weight="normal" text-anchor="start">Conceptual chain with separate implementations: Python offline twin and ESP32/Wokwi acquisition demonstrator.</text>
+<rect x="30" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="45" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">01</text>
+<text x="107" y="195" font-size="16" font-weight="bold" text-anchor="middle">Livestock</text>
+<text x="107" y="218" font-size="16" font-weight="bold" text-anchor="middle">environment</text>
+<text x="107" y="254" font-size="12" font-weight="normal" text-anchor="middle">Synthetic conditions</text>
+<polyline points="187,205 198,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="194,201 198,205 194,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="202" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="217" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">02</text>
+<text x="279" y="195" font-size="16" font-weight="bold" text-anchor="middle">Environmental</text>
+<text x="279" y="218" font-size="16" font-weight="bold" text-anchor="middle">and gas sensors</text>
+<text x="279" y="254" font-size="12" font-weight="normal" text-anchor="middle">Virtual / surrogate</text>
+<polyline points="359,205 370,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="366,201 370,205 366,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="374" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="389" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">03</text>
+<text x="451" y="195" font-size="16" font-weight="bold" text-anchor="middle">ESP32</text>
+<text x="451" y="218" font-size="16" font-weight="bold" text-anchor="middle">acquisition</text>
+<text x="451" y="254" font-size="12" font-weight="normal" text-anchor="middle">Time + raw signals</text>
+<polyline points="531,205 542,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="538,201 542,205 538,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="546" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="561" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">04</text>
+<text x="623" y="195" font-size="16" font-weight="bold" text-anchor="middle">QA/QC</text>
+<text x="623" y="218" font-size="16" font-weight="bold" text-anchor="middle">checks</text>
+<text x="623" y="254" font-size="12" font-weight="normal" text-anchor="middle">Preserve raw + flags</text>
+<polyline points="703,205 714,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="710,201 714,205 710,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="718" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="733" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">05</text>
+<text x="795" y="195" font-size="16" font-weight="bold" text-anchor="middle">Local logging</text>
+<text x="795" y="218" font-size="16" font-weight="bold" text-anchor="middle">microSD / CSV</text>
+<text x="795" y="254" font-size="12" font-weight="normal" text-anchor="middle">If storage healthy</text>
+<polyline points="875,205 886,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="882,201 886,205 882,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="890" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="905" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">06</text>
+<text x="967" y="195" font-size="16" font-weight="bold" text-anchor="middle">Telemetry</text>
+<text x="967" y="218" font-size="16" font-weight="bold" text-anchor="middle">queue</text>
+<text x="967" y="254" font-size="12" font-weight="normal" text-anchor="middle">Volatile records</text>
+<polyline points="1047,205 1058,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1054,201 1058,205 1054,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1062" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="1077" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">07</text>
+<text x="1139" y="195" font-size="16" font-weight="bold" text-anchor="middle">MQTT</text>
+<text x="1139" y="218" font-size="16" font-weight="bold" text-anchor="middle">optional cloud</text>
+<text x="1139" y="254" font-size="12" font-weight="normal" text-anchor="middle">Separate publisher</text>
+<polyline points="1219,205 1230,205" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1226,201 1230,205 1226,209" fill="none" stroke="#577b8c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="1234" y="130" width="154" height="150" rx="10" fill="#fff" stroke="#d1dfe6"/>
+<text x="1249" y="159" font-size="14" font-weight="bold" text-anchor="start" style="fill:#577b8c">08</text>
+<text x="1311" y="195" font-size="16" font-weight="bold" text-anchor="middle">Digital-twin</text>
+<text x="1311" y="218" font-size="16" font-weight="bold" text-anchor="middle">dashboard</text>
+<text x="1311" y="254" font-size="12" font-weight="normal" text-anchor="middle">Python state model</text>
+<text x="36" y="318" font-size="17" font-weight="normal" text-anchor="start">Logging and queueing are independent branches after QA/QC; a storage fault does not gate telemetry.</text>
+<rect x="30" y="347" width="1340" height="200" rx="10" fill="#eaf1f5" stroke="#d1dfe6"/>
+<text x="50" y="382" font-size="17" font-weight="bold" text-anchor="start">CONTROLLED PYTHON NETWORK-OUTAGE PATH</text>
+<text x="50" y="429" font-size="17" font-weight="bold" text-anchor="start">Network</text>
+<text x="50" y="455" font-size="16" font-weight="normal" text-anchor="start">unavailable</text>
+<text x="240" y="443" font-size="20" font-weight="normal" text-anchor="start">→</text>
+<text x="270" y="429" font-size="17" font-weight="bold" text-anchor="start">Acquisition</text>
+<text x="270" y="455" font-size="16" font-weight="normal" text-anchor="start">continues</text>
+<text x="460" y="443" font-size="20" font-weight="normal" text-anchor="start">→</text>
+<text x="490" y="429" font-size="17" font-weight="bold" text-anchor="start">Local storage</text>
+<text x="490" y="455" font-size="16" font-weight="normal" text-anchor="start">if healthy</text>
+<text x="680" y="443" font-size="20" font-weight="normal" text-anchor="start">→</text>
+<text x="710" y="429" font-size="17" font-weight="bold" text-anchor="start">Telemetry</text>
+<text x="710" y="455" font-size="16" font-weight="normal" text-anchor="start">remains queued</text>
+<text x="900" y="443" font-size="20" font-weight="normal" text-anchor="start">→</text>
+<text x="930" y="429" font-size="17" font-weight="bold" text-anchor="start">Network</text>
+<text x="930" y="455" font-size="16" font-weight="normal" text-anchor="start">restored</text>
+<text x="1120" y="443" font-size="20" font-weight="normal" text-anchor="start">→</text>
+<text x="1150" y="429" font-size="17" font-weight="bold" text-anchor="start">Simulated receiver</text>
+<text x="1150" y="455" font-size="16" font-weight="normal" text-anchor="start">synchronizes queue</text>
+<text x="50" y="516" font-size="17" font-weight="normal" text-anchor="start">Controlled simulation demonstrates retention of queued records during the tested outage.</text>
+<text x="36" y="588" font-size="16" font-weight="normal" text-anchor="start">No live ESP32 → Streamlit bridge is implemented. Firmware uses bounded RAM and QoS 0; delivery is not guaranteed.</text>
+<text x="36" y="619" font-size="16" font-weight="normal" text-anchor="start">Optional ThingsBoard is independent of the offline interview. Physical validation has not been performed.</text>
+</svg>

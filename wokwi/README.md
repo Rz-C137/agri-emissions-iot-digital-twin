@@ -33,3 +33,7 @@ Wokwi's [basic analog support](https://docs.wokwi.com/chips-api/analog) is not e
 ## Alternative: locally compiled firmware in the browser
 
 After `python -m platformio run -d firmware`, open the ESP32 browser project, paste this `diagram.json`, focus the code editor and press F1. Choose **Upload Firmware and Start Simulation…** and select `firmware/.pio/build/esp32dev/firmware.bin`. This is the official [custom application firmware](https://docs.wokwi.com/guides/esp32#custom-application-firmware) browser workflow; it does not require the VS Code extension. For a fully merged image, include bootloader, partition table and application using esptool as described in that guide. Firmware/browser execution evidence for this revision is in [verification.md](../docs/verification.md).
+
+## Illustrated wiring reference
+
+The repository-owned [hardware overview and exact pin map](../docs/hardware.md) provide a readable configuration reference. They are not Wokwi runtime captures or physical electrical validation.

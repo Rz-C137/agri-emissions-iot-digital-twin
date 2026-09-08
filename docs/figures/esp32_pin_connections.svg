@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="770" viewBox="0 0 1200 770" role="img" aria-labelledby="title desc">
+<title id="title">ESP32 · exact interface connections</title><desc id="desc">Signal names and power nets extracted from diagram.json and checked against firmware configuration.</desc>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#193948} .small{fill:#516b77}</style>
+<rect x="0" y="0" width="1200" height="770" rx="0" fill="#f5f8fa" stroke="none"/>
+<text x="36" y="44" font-size="26" font-weight="bold" text-anchor="start">ESP32 · exact interface connections</text>
+<text x="36" y="73" font-size="15" font-weight="normal" text-anchor="start">Signal names and power nets extracted from diagram.json and checked against firmware configuration.</text>
+<rect x="35" y="108" width="380" height="568" rx="10" fill="#fff" stroke="#dce5eb"/>
+<rect x="805" y="108" width="360" height="568" rx="10" fill="#eaf1f5" stroke="#cfdee6"/>
+<text x="58" y="144" font-size="17" font-weight="bold" text-anchor="start">PERIPHERAL CONTACT</text>
+<text x="830" y="144" font-size="17" font-weight="bold" text-anchor="start">ESP32 CONNECTION</text>
+<text x="58" y="195" font-size="17" font-weight="normal" text-anchor="start">DHT22 · DATA</text>
+<text x="830" y="195" font-size="17" font-weight="bold" text-anchor="start">GPIO4</text>
+<polyline points="415,190 805,190" fill="none" stroke="#22865d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="190" r="4" fill="#22865d"/>
+<circle cx="805" cy="190" r="4" fill="#22865d"/>
+<text x="58" y="246" font-size="17" font-weight="normal" text-anchor="start">MQ-2 · AO</text>
+<text x="830" y="246" font-size="17" font-weight="bold" text-anchor="start">GPIO34 / ADC1</text>
+<polyline points="415,241 805,241" fill="none" stroke="#d88a12" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="241" r="4" fill="#d88a12"/>
+<circle cx="805" cy="241" r="4" fill="#d88a12"/>
+<text x="58" y="297" font-size="17" font-weight="normal" text-anchor="start">microSD · CS</text>
+<text x="830" y="297" font-size="17" font-weight="bold" text-anchor="start">GPIO5</text>
+<polyline points="415,292 805,292" fill="none" stroke="#4168c1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="292" r="4" fill="#4168c1"/>
+<circle cx="805" cy="292" r="4" fill="#4168c1"/>
+<text x="58" y="348" font-size="17" font-weight="normal" text-anchor="start">microSD · SCK</text>
+<text x="830" y="348" font-size="17" font-weight="bold" text-anchor="start">GPIO18</text>
+<polyline points="415,343 805,343" fill="none" stroke="#7654ac" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="343" r="4" fill="#7654ac"/>
+<circle cx="805" cy="343" r="4" fill="#7654ac"/>
+<text x="58" y="399" font-size="17" font-weight="normal" text-anchor="start">microSD · DO / MISO</text>
+<text x="830" y="399" font-size="17" font-weight="bold" text-anchor="start">GPIO19</text>
+<polyline points="415,394 805,394" fill="none" stroke="#078b9d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="394" r="4" fill="#078b9d"/>
+<circle cx="805" cy="394" r="4" fill="#078b9d"/>
+<text x="58" y="450" font-size="17" font-weight="normal" text-anchor="start">microSD · DI / MOSI</text>
+<text x="830" y="450" font-size="17" font-weight="bold" text-anchor="start">GPIO23</text>
+<polyline points="415,445 805,445" fill="none" stroke="#4366a0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="445" r="4" fill="#4366a0"/>
+<circle cx="805" cy="445" r="4" fill="#4366a0"/>
+<text x="58" y="501" font-size="17" font-weight="normal" text-anchor="start">DHT22 + microSD · VCC</text>
+<text x="830" y="501" font-size="17" font-weight="bold" text-anchor="start">3.3 V</text>
+<polyline points="415,496 805,496" fill="none" stroke="#c94348" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="496" r="4" fill="#c94348"/>
+<circle cx="805" cy="496" r="4" fill="#c94348"/>
+<text x="58" y="552" font-size="17" font-weight="normal" text-anchor="start">MQ-2 · VCC</text>
+<text x="830" y="552" font-size="17" font-weight="bold" text-anchor="start">VIN / 5 V (virtual only)</text>
+<polyline points="415,547 805,547" fill="none" stroke="#c94348" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="547" r="4" fill="#c94348"/>
+<circle cx="805" cy="547" r="4" fill="#c94348"/>
+<text x="58" y="603" font-size="17" font-weight="normal" text-anchor="start">DHT22 + MQ-2 + SD · GND</text>
+<text x="830" y="603" font-size="17" font-weight="bold" text-anchor="start">GND</text>
+<polyline points="415,598 805,598" fill="none" stroke="#263744" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="415" cy="598" r="4" fill="#263744"/>
+<circle cx="805" cy="598" r="4" fill="#263744"/>
+<text x="36" y="707" font-size="15" font-weight="normal" text-anchor="start">DHT22: 10 kΩ pull-up from DATA to 3.3 V. NC unused. MQ-2 DO unused. UART serial monitor: 115200 baud.</text>
+<polyline points="36,742 58,742" fill="none" stroke="#c94348" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="66" y="747" font-size="14" font-weight="normal" text-anchor="start">Power</text>
+<polyline points="170,742 192,742" fill="none" stroke="#263744" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="200" y="747" font-size="14" font-weight="normal" text-anchor="start">Ground</text>
+<polyline points="310,742 332,742" fill="none" stroke="#22865d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="340" y="747" font-size="14" font-weight="normal" text-anchor="start">Digital</text>
+<polyline points="450,742 472,742" fill="none" stroke="#d88a12" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="480" y="747" font-size="14" font-weight="normal" text-anchor="start">Analog</text>
+<polyline points="590,742 612,742" fill="none" stroke="#4168c1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="620" y="747" font-size="14" font-weight="normal" text-anchor="start">SPI: CS / SCK / MISO / MOSI</text>
+<text x="1160" y="747" font-size="13" font-weight="normal" text-anchor="end">Colors are not a standard.</text>
+</svg>

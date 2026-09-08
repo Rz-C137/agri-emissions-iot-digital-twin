@@ -2,32 +2,21 @@
 
 **A virtual prototype for continuous environmental and gaseous-emission monitoring in livestock facilities**
 
-I designed this portfolio prototype to investigate the complete measurement chain: acquisition, sensor interfaces, quality assurance, logging, communication, calibration and fault recovery. The primary demonstration runs locally without hardware, accounts or cloud services.
+I use this synthetic prototype to demonstrate reliable environmental acquisition, local logging, fault recovery and transparent sensor-to-reference validation.
 
-**All measurements are synthetic.** This is an independent personal project; no employer or research-project affiliation is implied. Gas concentration is demonstrated, not an emission mass rate.
+![Synthetic monitoring dashboard and live system state](docs/figures/dashboard_overview.png)
 
-## Interface preview
+*Local Python dashboard: synthetic measurements, independent faults and current state. No physical farm data.*
 
-![Overview of the synthetic monitoring dashboard](docs/overview.png)
+![ESP32 virtual acquisition node with DHT22, MQ-2 surrogate and microSD](docs/figures/virtual_hardware_overview.svg)
 
-The opening screen separates environmental conditions from monitoring-system health. Dedicated pages expose acquisition, fault handling, data quality and virtual validation.
+*Virtual hardware layout derived from the project wiring configuration. MQ-2 is an analog gas-channel surrogate, not a selective NH₃ sensor.*
 
-## Architecture overview
+![Measurement chain and controlled network-outage behavior](docs/figures/measurement_chain.svg)
 
-```mermaid
-flowchart LR
-    A[Synthetic livestock environment] --> B[Virtual sensors]
-    B --> C[Interfaces / ESP32 concept]
-    C --> D[Acquisition and QA/QC]
-    D --> E[Local CSV storage]
-    D --> F[Telemetry queue]
-    F --> G[Simulated receiver / optional MQTT]
-    G --> H[Measurement-system digital twin]
-    H --> I[Dashboard]
-    I --> J[Calibration and holdout validation]
-```
+*Conceptual roles across separate demonstrations. Python runs the offline twin; ESP32/Wokwi demonstrates embedded acquisition. Streamlit does not ingest live ESP32 telemetry.*
 
-Python implements the complete offline virtual chain. The modular ESP32/Wokwi project is a separate embedded acquisition demonstration. Live firmware ingestion into Streamlit is not implemented. The MQ2 analog chain is deliberately separate from the Python synthetic NH₃ instrument model.
+**All measurements are synthetic.** This is an independent personal project; no employer affiliation, physical validation or emission mass-rate measurement is implied. See the new **Virtual Hardware** dashboard page and [hardware reference](docs/hardware.md) for exact pins and the physical front-end limitations.
 
 ## What this prototype demonstrates
 

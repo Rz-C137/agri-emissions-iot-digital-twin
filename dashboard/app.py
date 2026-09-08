@@ -12,6 +12,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from dashboard.hardware import glance, hardware_page  # noqa: E402
 from simulator.engine import SENSOR_MODES, Twin  # noqa: E402
 from simulator.health import assess  # noqa: E402
 from simulator.model import Config  # noqa: E402
@@ -42,6 +43,7 @@ with st.sidebar:
             "Overview",
             "Live Monitoring",
             "System Architecture",
+            "Virtual Hardware",
             "Fault Injection",
             "Data Quality",
             "Calibration & Validation",
@@ -194,6 +196,8 @@ def content() -> None:
             f"**Environment:** {twin.environment_mode} · **Gas channel:** {last['gas_channel_status']} · "
             f"**Network:** {twin.network} · **Storage:** {twin.storage}"
         )
+        if page == "Overview":
+            glance(twin, running)
         line(
             frame.tail(180),
             ["nh3_raw_ppm", "nh3_reference_ppm"],
@@ -213,6 +217,9 @@ def content() -> None:
             line(frame.tail(180), ["temperature_c"], "Temperature", "°C")
             line(frame.tail(180), ["relative_humidity_pct"], "Relative humidity", "%")
             line(frame.tail(180), ["co2_ppm"], "Synthetic CO₂", "ppm")
+
+    elif page == "Virtual Hardware":
+        hardware_page(ROOT)
 
     elif page == "System Architecture":
         stages = [
