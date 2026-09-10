@@ -1,8 +1,9 @@
 # 🚀 Wokwi Quick Start Guide
 
-## 3-Minute Setup (Minimal Demo)
+## 5-Minute Setup
 
-**Note:** This is a **minimal demonstration** with only ESP32 + DHT22 sensor. Physical system will include full sensor suite.
+**Circuit:** ESP32 + DHT22 (GPIO4) + MQ-2 analog surrogate (GPIO34) + microSD (SPI) + status LED (GPIO2).  
+**Note:** MQ-2 is a Wokwi simulation surrogate only — not selective NH₃. Physical build uses NH₃-B1 + potentiostat.
 
 ### Step 1: Open Wokwi
 Go to: **https://wokwi.com/**
