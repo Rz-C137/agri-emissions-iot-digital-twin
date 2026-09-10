@@ -4,10 +4,11 @@
 
 1. Go to https://wokwi.com/
 2. Sign in (use your token if needed: `wok_OElZHEOtuF0wdR5TbVIAnYHkPp0bMIzWa1040fab`)
-3. Create new project: ESP32
-4. Copy contents of `wokwi/diagram.json` into the diagram editor
-5. Copy firmware code from `firmware/src/main.cpp` into code editor
-6. Click "Start Simulation"
+3. Create new project: **Arduino ESP32**
+4. Replace `diagram.json` with contents from `wokwi/diagram.json` in this repo
+5. Replace `sketch.ino` with contents from `wokwi/sketch.ino` in this repo
+6. Click "▶ Start Simulation"
+7. Watch serial monitor for data output and status LED for system health
 
 ## What the Simulation Demonstrates
 
@@ -15,23 +16,20 @@
 
 - **ESP32 DevKit v1** - Main microcontroller
 - **DHT22** - Temperature and humidity sensor (GPIO4, digital interface with 10kΩ pull-up)
-- **Potentiometer** - Simulates analog gas sensor output (GPIO34, ADC1_CH6)
+- **Analog Joystick** - Simulates analog gas sensor output (GPIO34, ADC1_CH6) - vertical axis only
 - **microSD Card** - Local data logging (SPI: CS=5, SCK=18, MISO=19, MOSI=23)
-- **Status LED** - System health indicator (GPIO2)
-- **OLED Display** - Status visualization (I²C: SDA=21, SCL=22)
+- **Status LED** - System health indicator (GPIO2 with 220Ω resistor)
 
 ### Pin Connections
 
 | Component | ESP32 GPIO | Interface | Notes |
 |-----------|------------|-----------|-------|
 | DHT22 DATA | GPIO4 | Digital (1-wire) | 10kΩ pull-up to 3.3V |
-| Gas Analog | GPIO34 (ADC1_CH6) | Analog input | 0-3.3V range |
+| Joystick VERT | GPIO34 (ADC1_CH6) | Analog input | 0-3.3V, simulates gas sensor |
 | SD CS | GPIO5 | SPI | Check strapping at boot |
 | SD SCK | GPIO18 | SPI | Hardware SPI bus |
 | SD MISO | GPIO19 | SPI | |
 | SD MOSI | GPIO23 | SPI | |
-| OLED SDA | GPIO21 | I²C | 4.7kΩ pull-up recommended |
-| OLED SCL | GPIO22 | I²C | Standard mode (100 kHz) |
 | Status LED | GPIO2 | Digital output | 220Ω current-limiting resistor |
 
 ## Simulation vs. Physical Hardware
@@ -105,11 +103,20 @@ For production deployment, the Wokwi simulation must be complemented with:
 ### Expected Serial Output
 
 ```
-# SYSTEM_START,uptime=0,storage=OK
-# DHT22_READ,sequence=0,temp_c=22.5,humidity_pct=65.0
-# ADC_READ,sequence=0,gpio=34,raw_counts=1450
-timestamp,sequence,uptime_ms,nh3_raw_ppm,...
-2026-09-10T18:00:00Z,0,5000,12.3,...
+=== Agricultural Emission Monitoring System ===
+Virtual Hardware Demonstration
+==============================================
+
+[OK] DHT22 initialized
+[OK] SD card initialized
+[OK] Data file created: /data.csv
+
+[INFO] System ready - acquiring data every 5 seconds
+timestamp,sequence,temp_c,humidity_pct,gas_raw,gas_voltage,sd_status
+----------------------------------------------------------------
+00:00:05,0,22.5,65.0,2048,1.650,OK
+00:00:10,1,22.5,65.0,2050,1.651,OK
+00:00:15,2,22.5,65.1,2045,1.647,OK
 ```
 
 ### Status LED Behavior
