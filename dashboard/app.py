@@ -36,8 +36,8 @@ if "twin" not in st.session_state:
 twin = st.session_state.twin
 
 with st.sidebar:
-    st.markdown("### AGRI EMISSIONS\nMeasurement-system digital twin")
-    st.caption("VIRTUAL PROTOTYPE · SIMULATED DATA")
+    st.markdown("### AGRI EMISSIONS\nVirtual Commissioning Prototype")
+    st.caption("VIRTUAL SYSTEM · SIMULATED DATA · NO PHYSICAL SENSORS")
     page = st.radio(
         "Workspace",
         [
@@ -106,13 +106,18 @@ def content() -> None:
 
     if page == "Overview":
         st.title(
-            "Digital Twin and Virtual Commissioning of an IoT-Based Agricultural Emission Monitoring System"
+            "Virtual Commissioning Prototype: IoT-Based Agricultural Emission Monitoring System"
         )
         st.markdown(
-            "**A virtual prototype for continuous environmental and gaseous-emission monitoring in livestock facilities**"
+            "**Engineering demonstration of measurement-system architecture, fault handling, and validation methodology**"
+        )
+        st.info(
+            "⚠️ This is a **virtual commissioning environment** with simulated sensors and synthetic data. "
+            "Physical sensor integration, laboratory calibration, and field deployment are planned future experimental stages."
         )
         st.write(
-            "I use this virtual measurement system to investigate sensor quality, reliable data collection and recovery from faults."
+            "This virtual system demonstrates firmware architecture, fault injection/recovery, data quality assurance, "
+            "and validation workflows before physical hardware implementation."
         )
     else:
         st.title(page)
@@ -269,7 +274,10 @@ def content() -> None:
         )
         st.plotly_chart(fig, width="stretch")
         st.info(
-            "The Python demo runs the entire virtual chain locally. ESP32 firmware is a separate acquisition demonstrator; this dashboard does not ingest live firmware telemetry."
+            "**Implementation status:** The Python simulation runs the complete virtual measurement chain. "
+            "ESP32 firmware exists as a separate embedded demonstration (DHT22 + ADC + SD card logging). "
+            "This dashboard does **not** connect to live ESP32 hardware. Physical sensor integration (NH₃-B1, SCD41) "
+            "and RS-485 electrical commissioning are future implementation stages."
         )
 
     elif page == "Data Quality":
@@ -357,7 +365,9 @@ def content() -> None:
             fig.add_hline(y=0, line_dash="dash")
             st.plotly_chart(fig, width="stretch")
         st.warning(
-            "Virtual agreement is an algorithm check, not laboratory validation or evidence of NH₃ selectivity."
+            "⚠️ **Important:** This synthetic validation demonstrates the calibration/validation workflow and statistical analysis methodology. "
+            "It is **not** evidence of physical sensor performance, laboratory accuracy, or NH₃ selectivity. "
+            "Physical validation requires laboratory experiments with certified reference gases and traceable reference analyzers."
         )
 
     elif page == "Event Log":
@@ -376,8 +386,9 @@ def content() -> None:
             {
                 "sampling_interval_s": twin.config.interval_s,
                 "seed": twin.config.seed,
-                "interfaces": "DHT22 digital / MQ2 analog ADC / microSD SPI",
-                "transport": "In-process acknowledged simulation; optional MQTT publisher is separate",
+                "interfaces_implemented": "DHT22 digital / ADC analog / microSD SPI (firmware)",
+                "interfaces_proposed": "NH₃-B1 electrochemical (requires potentiostat) / SCD41 I²C (driver not coded)",
+                "transport": "In-process acknowledged simulation; optional MQTT publisher (QoS 0) is separate",
                 "queue": "Session-memory dictionaries keyed by sequence; no silent eviction",
                 "storage": str(twin.log_path),
                 "quality_contract": "quality_code bitmask + quality_flags pipe-separated names; VALID = 0",
@@ -387,13 +398,19 @@ def content() -> None:
             }
         )
         st.write(
-            "The gas_raw field in Python is an illustrative 100 counts/ppm signal, not an MQ2 transfer function. ESP32 reports actual simulated ADC counts and leaves NH₃ fields empty. Calibration is performed only on the independent validation page/dataset."
+            "**Sensor simulation details:** The gas_raw field in Python is an illustrative 100 counts/ppm signal, not an actual MQ-2 transfer function. "
+            "ESP32 firmware (separate implementation) reports simulated ADC counts and leaves NH₃ concentration fields empty. "
+            "Calibration in this dashboard is performed only on the independent validation page using a fixed synthetic dataset."
         )
         st.write(
-            "Memory queues do not survive process termination. CSV files preserve local acquisitions but are not replayed automatically. Firmware uses a bounded queue and explicitly counts overflows. No emission mass flux can be inferred without ventilation and a validated measurement method."
+            "**Data persistence:** Memory queues do not survive process termination. CSV files preserve local acquisitions but are not replayed automatically. "
+            "Firmware uses a bounded queue and explicitly counts overflows. "
+            "**Important:** No emission mass flux can be inferred without validated ventilation measurements and reference-method validation."
         )
         st.write(
-            "This is a twin of measurement-system state, not barn physics, airflow, animal physiology or manure processes. See docs/validation_protocol.md for the proposed physical validation pathway."
+            "**Scope boundaries:** This is a virtual commissioning environment for measurement-system architecture and fault-handling logic. "
+            "It does **not** simulate barn physics, airflow, animal physiology, or manure processes. "
+            "See `docs/validation_protocol.md` and `docs/marvela_alignment.md` for the proposed physical validation pathway."
         )
 
 
