@@ -95,11 +95,13 @@ This repository presents an **engineering design and implementation workflow** f
   - Calibration/validation page with statistical analysis
   - Modbus commissioning bench (protocol-level simulation)
 
-📸 **Dashboard screenshots:** [docs/figures/dashboard_overview.png](docs/figures/dashboard_overview.png)
+📸 **Live demonstration:** Streamlit dashboard with 3-page interface optimized for interview presentation
 
 ![Streamlit overview — synthetic measurements and system state](docs/figures/dashboard_overview.png)
 
-*Dashboard showing synthetic data from digital twin simulation*
+*Dashboard showing synthetic data from virtual commissioning environment*
+
+🖥️ **Virtual hardware:** Interactive Wokwi simulation - see [WOKWI_SETUP.md](WOKWI_SETUP.md) for setup instructions
 
 ![Measurement chain — acquire, retain, communicate](docs/figures/measurement_chain.svg)
 

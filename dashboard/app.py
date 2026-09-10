@@ -37,20 +37,13 @@ twin = st.session_state.twin
 
 with st.sidebar:
     st.markdown("### AGRI EMISSIONS\nVirtual Commissioning Prototype")
-    st.caption("VIRTUAL SYSTEM · SIMULATED DATA · NO PHYSICAL SENSORS")
+    st.caption("VIRTUAL SYSTEM · SIMULATED DATA")
     page = st.radio(
-        "Workspace",
+        "Navigation",
         [
-            "Overview",
-            "Live Monitoring",
-            "System Architecture",
-            "Virtual Hardware",
-            "Commissioning Bench",
-            "Fault Injection",
-            "Data Quality",
-            "Calibration & Validation",
-            "Event Log",
-            "Technical Details",
+            "🏠 Overview & Live System",
+            "🔧 Hardware & Architecture", 
+            "📊 Validation & Technical Details",
         ],
     )
     st.divider()
@@ -104,27 +97,20 @@ def content() -> None:
     completeness = 100 * available.mean()
     st.caption("SYNTHETIC MEASUREMENTS · NO PHYSICAL FARM DATA")
 
-    if page == "Overview":
-        st.title(
-            "Virtual Commissioning Prototype: IoT-Based Agricultural Emission Monitoring System"
-        )
+    page_title = page.split(" ", 1)[1] if " " in page else page
+    st.title(page_title)
+
+    if page == "🏠 Overview & Live System":
         st.markdown(
-            "**Engineering demonstration of measurement-system architecture, fault handling, and validation methodology**"
+            "**Virtual commissioning prototype demonstrating firmware architecture, fault handling, and data quality assurance**"
         )
         st.info(
-            "⚠️ This is a **virtual commissioning environment** with simulated sensors and synthetic data. "
-            "Physical sensor integration, laboratory calibration, and field deployment are planned future experimental stages."
+            "⚠️ **Virtual system with simulated sensors.** Physical integration, lab calibration, and field deployment are future stages."
         )
-        st.write(
-            "This virtual system demonstrates firmware architecture, fault injection/recovery, data quality assurance, "
-            "and validation workflows before physical hardware implementation."
-        )
-    else:
-        st.title(page)
-
-    if page in ("Overview", "Live Monitoring", "Fault Injection"):
-        if page == "Fault Injection":
-            st.caption("Each control changes one state only and acquires a sample immediately.")
+        
+        # Fault Injection Controls
+        with st.expander("🔧 Fault Injection & System Controls", expanded=False):
+            st.caption("Inject faults independently to test system resilience")
             environment, sensor, infrastructure = st.columns(3)
             with environment:
                 st.markdown("**Synthetic environment**")
@@ -163,7 +149,9 @@ def content() -> None:
                 twin.restore_all()
                 twin.step()
                 st.rerun()
-            st.caption("Restore all faults leaves the synthetic environment unchanged.")
+            st.caption("Restore all faults leaves environment unchanged")
+        
+        # System Health Status
         health = assess(last, twin.network, twin.storage)
         if health.measurement_system == "OPERATIONAL":
             st.success(
@@ -200,11 +188,15 @@ def content() -> None:
         c.metric("Relative humidity", f"{last['relative_humidity_pct']:.1f} %")
         d.metric("Data completeness", f"{completeness:.1f} %")
         st.markdown(
-            f"**Environment:** {twin.environment_mode} · **Gas channel:** {last['gas_channel_status']} · "
+            f"**Environment:** {twin.environment_mode} · **Gas:** {last['gas_channel_status']} · "
             f"**Network:** {twin.network} · **Storage:** {twin.storage}"
         )
-        if page == "Overview":
-            glance(twin, running)
+        
+        # System at a Glance
+        glance(twin, running)
+        
+        # Live Monitoring Charts
+        st.markdown("### 📈 Live Monitoring")
         line(
             frame.tail(180),
             ["nh3_raw_ppm", "nh3_reference_ppm"],
@@ -217,21 +209,49 @@ def content() -> None:
         c.metric("Simulated receiver records", len(twin.delivered))
         d.metric("Pending local writes", len(twin.local_pending))
         st.caption(
-            f"Locally logged: {len(twin.local_ids)} · Sensor retries: {twin.retries} · "
-            f"Last outage to synchronization: {twin.recovery_time_s if twin.recovery_time_s is not None else '—'} s"
+            f"Local log: {len(twin.local_ids)} · Retries: {twin.retries} · "
+            f"Recovery time: {twin.recovery_time_s if twin.recovery_time_s is not None else '—'} s"
         )
-        if page == "Live Monitoring":
+        
+        # Additional environmental charts
+        col1, col2 = st.columns(2)
+        with col1:
             line(frame.tail(180), ["temperature_c"], "Temperature", "°C")
-            line(frame.tail(180), ["relative_humidity_pct"], "Relative humidity", "%")
-            line(frame.tail(180), ["co2_ppm"], "Synthetic CO₂", "ppm")
+        with col2:
+            line(frame.tail(180), ["relative_humidity_pct"], "Humidity", "%")
 
-    elif page == "Virtual Hardware":
-        hardware_page(ROOT)
-
-    elif page == "Commissioning Bench":
-        commissioning_page(ROOT)
-
-    elif page == "System Architecture":
+    elif page == "🔧 Hardware & Architecture":
+        st.markdown(
+            "**Virtual hardware demonstration and system architecture**"
+        )
+        
+        # Wokwi Simulation Embed
+        st.markdown("### 🖥️ Virtual Hardware Prototype")
+        st.info(
+            "Interactive ESP32 simulation with DHT22, analog gas sensor, and SD card. "
+            "Click 'Start Simulation' in the embedded viewer below."
+        )
+        
+        wokwi_url = "https://wokwi.com/projects/new/esp32"
+        st.markdown(
+            f'<iframe src="{wokwi_url}" width="100%" height="500" frameborder="0"></iframe>',
+            unsafe_allow_html=True
+        )
+        st.caption(
+            "**Note:** Physical implementation requires NH₃-B1 electrochemical sensor with potentiostatic front-end, "
+            "I²C environmental sensor, and RS-485 Modbus interface."
+        )
+        
+        # Hardware Details
+        with st.expander("📐 Hardware Specifications", expanded=False):
+            hardware_page(ROOT)
+        
+        # System Architecture
+        st.markdown("### 🏗️ System Architecture")
+        st.info(
+            "**Implemented:** ESP32 firmware (DHT22 + ADC + SD), Modbus protocol (host-tested), Python simulation. "
+            "**Future:** Physical sensor integration, RS-485 electrical commissioning."
+        )
         stages = [
             "Livestock environment\nSynthetic conditions",
             "Virtual sensors\nGas + T/RH",
@@ -273,40 +293,17 @@ def content() -> None:
             margin=dict(t=0, b=0),
         )
         st.plotly_chart(fig, width="stretch")
-        st.info(
-            "**Implementation status:** The Python simulation runs the complete virtual measurement chain. "
-            "ESP32 firmware exists as a separate embedded demonstration (DHT22 + ADC + SD card logging). "
-            "This dashboard does **not** connect to live ESP32 hardware. Physical sensor integration (NH₃-B1, SCD41) "
-            "and RS-485 electrical commissioning are future implementation stages."
-        )
+        
+        # Modbus Commissioning Bench
+        with st.expander("🔌 Modbus RTU Commissioning Bench", expanded=False):
+            st.markdown("Protocol-level simulation for reference analyzer integration")
+            commissioning_page(ROOT)
 
-    elif page == "Data Quality":
-        a, b, c = st.columns(3)
-        a.metric("Valid", int((frame.quality_flags == "VALID").sum()))
-        b.metric("Flagged", int((frame.quality_flags != "VALID").sum()))
-        c.metric("Missing / nonfinite NH₃", int((~available).sum()))
-        st.write(
-            f"Completeness: {completeness:.1f}% of acquisition attempts contain a finite raw NH₃ value. Completeness is distinct from validity."
-        )
-        twin.quality = type(twin.quality)(
-            stale_s=2 * twin.config.interval_s,
-            outlier_enabled=st.checkbox(
-                "Enable causal outlier detection", value=twin.quality.outlier_enabled
-            ),
-        )
-        st.caption(
-            "Setting applies to future samples. Flagged values are retained; no automatic deletion."
-        )
-        st.dataframe(frame.tail(300), width="stretch", hide_index=True)
-        st.download_button(
-            "Download all measurements (CSV)",
-            frame.to_csv(index=False),
-            "simulated-measurements.csv",
-            "text/csv",
-        )
-        st.dataframe(pd.DataFrame(twin.events).tail(30), hide_index=True)
-
-    elif page == "Calibration & Validation":
+    elif page == "📊 Validation & Technical Details":
+        st.markdown("**Calibration methodology, data quality, and system technical specifications**")
+        
+        # Calibration & Validation
+        st.markdown("### 📐 Calibration & Validation Workflow")
         calibrated, report = validation_data()
         st.write(
             "Current demonstration: affine sensor-to-reference calibration. Temperature/humidity compensation is a possible future extension, not fitted here. A separate, fixed three-day synthetic dataset keeps this comparison reproducible. The first 60% trains a two-parameter linear correction; the final 40% evaluates it without refitting."
@@ -365,23 +362,40 @@ def content() -> None:
             fig.add_hline(y=0, line_dash="dash")
             st.plotly_chart(fig, width="stretch")
         st.warning(
-            "⚠️ **Important:** This synthetic validation demonstrates the calibration/validation workflow and statistical analysis methodology. "
-            "It is **not** evidence of physical sensor performance, laboratory accuracy, or NH₃ selectivity. "
-            "Physical validation requires laboratory experiments with certified reference gases and traceable reference analyzers."
+            "⚠️ **Synthetic validation workflow demonstration.** Not evidence of physical sensor performance. "
+            "Laboratory validation with certified reference gases required."
         )
-
-    elif page == "Event Log":
-        severity = st.multiselect(
-            "Severity", ["INFO", "WARNING", "ERROR"], default=["INFO", "WARNING", "ERROR"]
-        )
-        events = pd.DataFrame(
-            twin.events, columns=["timestamp", "severity", "event_type", "description"]
-        )
-        st.dataframe(
-            events[events.severity.isin(severity)].iloc[::-1], hide_index=True, width="stretch"
-        )
-
-    elif page == "Technical Details":
+        
+        # Data Quality Summary
+        st.markdown("### 📋 Data Quality Summary")
+        qa, qb, qc = st.columns(3)
+        qa.metric("Valid", int((frame.quality_flags == "VALID").sum()))
+        qb.metric("Flagged", int((frame.quality_flags != "VALID").sum()))
+        qc.metric("Completeness", f"{completeness:.1f}%")
+        
+        with st.expander("📊 Quality Details & Data Export", expanded=False):
+            st.write("Flagged values are retained; no automatic deletion.")
+            twin.quality = type(twin.quality)(
+                stale_s=2 * twin.config.interval_s,
+                outlier_enabled=st.checkbox(
+                    "Enable outlier detection", value=twin.quality.outlier_enabled
+                ),
+            )
+            st.dataframe(frame.tail(100), hide_index=True)
+            st.download_button(
+                "Download CSV",
+                frame.to_csv(index=False),
+                "measurements.csv",
+                "text/csv",
+            )
+        
+        # Event Log
+        with st.expander("📜 System Event Log", expanded=False):
+            events = pd.DataFrame(twin.events, columns=["timestamp", "severity", "event_type", "description"])
+            st.dataframe(events.iloc[::-1].head(50), hide_index=True, width="stretch")
+        
+        # Technical Details
+        st.markdown("### ⚙️ Technical Specifications")
         st.json(
             {
                 "sampling_interval_s": twin.config.interval_s,
