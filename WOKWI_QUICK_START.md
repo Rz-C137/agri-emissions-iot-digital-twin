@@ -1,6 +1,8 @@
 # 🚀 Wokwi Quick Start Guide
 
-## 5-Minute Setup
+## 3-Minute Setup (Minimal Demo)
+
+**Note:** This is a **minimal demonstration** with only ESP32 + DHT22 sensor. Physical system will include full sensor suite.
 
 ### Step 1: Open Wokwi
 Go to: **https://wokwi.com/**
@@ -10,62 +12,67 @@ Use your token: `wok_OElZHEOtuF0wdR5TbVIAnYHkPp0bMIzWa1040fab`
 
 ### Step 3: Create New Project
 - Click **"New Project"**
-- Select **"Arduino ESP32"**
+- Select **"ESP32"** (plain, not Arduino)
 
 ### Step 4: Load Diagram
-1. Click on **`diagram.json`** tab in Wokwi editor
+1. Click **`diagram.json`** tab in Wokwi editor
 2. **Delete all existing content**
-3. Copy and paste from this repo: [`wokwi/diagram.json`](wokwi/diagram.json)
+3. Copy **entire content** from repo: [`wokwi/diagram.json`](wokwi/diagram.json)
 
 ### Step 5: Load Code
-1. Click on **`sketch.ino`** tab in Wokwi editor
+1. Click **`sketch.ino`** tab in Wokwi editor
 2. **Delete all existing content**
-3. Copy and paste from this repo: [`wokwi/sketch.ino`](wokwi/sketch.ino)
+3. Copy **entire content** from repo: [`wokwi/sketch.ino`](wokwi/sketch.ino)
 
-### Step 6: Start Simulation
+### Step 6: Add Library Dependencies
+1. Click **"Library Manager"** (📚 icon)
+2. Search: **"DHT sensor library for ESPx"**
+3. Click **"Add to project"**
+
+OR simply create `libraries.txt` file with content:
+```
+DHT sensor library for ESPx
+```
+
+### Step 7: Start Simulation
 - Click green **"▶ Start Simulation"** button
 - Wait ~5 seconds for first data output
 
-### Step 7: Observe Output
-Watch the **Serial Monitor** (bottom panel) for:
+### Step 8: Observe Output
+Watch the **Serial Monitor** (bottom panel):
 ```
-=== Agricultural Emission Monitoring System ===
-[OK] DHT22 initialized
-[OK] SD card initialized
-[INFO] System ready - acquiring data every 5 seconds
-```
+=== Agricultural IoT Monitoring System ===
+Virtual Hardware Demo for ATB Interview
+==========================================
 
-Every 5 seconds you'll see:
-```
-00:00:05,0,22.5,65.0,2048,1.650,OK
-00:00:10,1,22.5,65.0,2050,1.651,OK
-```
+[OK] System initialized
 
-### Step 8: Check System Health
-- **Green LED ON** = System healthy (sensor + SD card working)
-- **LED OFF** = Error detected
+Sampling every 5 seconds...
+
+Time,Sequence,Temp(C),Humidity(%),Status
+------------------------------------------
+00:00:05,0,22.0,50.0,OK
+00:00:10,1,22.0,50.0,OK
+00:00:15,2,22.0,50.0,OK
+```
 
 ---
 
 ## 🎮 Interactive Demo
 
-### Simulate Gas Sensor Changes
-1. Click on the **Joystick** component
-2. Move the **vertical axis up/down**
-3. Watch the `gas_raw` and `gas_voltage` values change in serial output
-
-### Simulate SD Card Failure
+### Change Temperature/Humidity
 1. Click **Stop Simulation**
-2. Click on **SD card** component → disconnect VCC wire
-3. Click **Start Simulation**
-4. Watch serial output show `[ERROR] SD card initialization failed`
-5. Status LED will turn **OFF**
+2. Click on **DHT22** component
+3. Change `temperature` and `humidity` attributes (e.g., temp=30, humidity=80)
+4. Click **Start Simulation**
+5. Watch values in serial output update
 
 ### Simulate Sensor Failure
-1. Disconnect **DHT22** VCC wire
-2. Restart simulation
-3. Watch output show `ERROR,ERROR` for temp/humidity
-4. Status LED will turn **OFF**
+1. Click **Stop Simulation**
+2. Click on the **red wire** between DHT22 VCC and ESP32 3.3V
+3. Press **Delete** to disconnect
+4. Click **Start Simulation**
+5. Watch output show `ERROR,ERROR,SENSOR_FAIL`
 
 ---
 
@@ -73,13 +80,11 @@ Every 5 seconds you'll see:
 
 | Column | Meaning | Example |
 |--------|---------|---------|
-| `timestamp` | Simulation time | `00:01:25` |
-| `sequence` | Sample number | `17` |
-| `temp_c` | Temperature (°C) | `22.5` |
-| `humidity_pct` | Relative humidity (%) | `65.0` |
-| `gas_raw` | ADC counts (0-4095) | `2048` |
-| `gas_voltage` | Analog voltage (V) | `1.650` |
-| `sd_status` | Storage state | `OK` or `SD_ERR` |
+| `Time` | Simulation time | `00:01:25` |
+| `Sequence` | Sample number | `17` |
+| `Temp(C)` | Temperature (°C) | `22.0` |
+| `Humidity(%)` | Relative humidity (%) | `50.0` |
+| `Status` | Sensor state | `OK` or `SENSOR_FAIL` |
 
 ---
 
@@ -95,11 +100,11 @@ Every 5 seconds you'll see:
 
 ### ❌ No Serial Output
 - **Solution:** Check baud rate in serial monitor = **115200**
-- Click "Reset" button on ESP32 in simulation
+- Click "Reset" button (↻) on ESP32 in simulation
 
-### ❌ SD Card Not Working
-- **Solution:** Check all 4 SPI connections (CS, SCK, MISO, MOSI)
-- Verify SD card VCC connected to ESP32 3.3V
+### ❌ DHT Library Error
+- **Solution:** Make sure you added library via Library Manager or `libraries.txt`
+- Library name: **"DHT sensor library for ESPx"** (exact name)
 
 ---
 
@@ -125,19 +130,21 @@ Every 5 seconds you'll see:
 
 ---
 
-## ⏱️ Interview Talking Points (2-3 minutes)
+## ⏱️ Interview Talking Points (1-2 minutes)
 
-> "This Wokwi simulation demonstrates the embedded firmware running on ESP32. You can see:
+> "This Wokwi simulation demonstrates **embedded firmware compilation and sensor acquisition** on ESP32:
 > 
-> 1. **DHT22 sensor** reading temperature and humidity every 5 seconds
-> 2. **Analog gas sensor** (simulated by joystick) - in physical system this would be NH₃-B1 electrochemical sensor
-> 3. **SD card logging** - creating CSV file with all measurements
-> 4. **Status LED** - green when system healthy, off when fault detected
-> 5. **Serial monitor** - real-time data output in CSV format
+> 1. **DHT22 sensor** - Digital temperature/humidity acquisition every 5 seconds
+> 2. **Serial data output** - CSV format for data logging
+> 3. **Error handling** - Shows SENSOR_FAIL if DHT22 disconnects
 > 
-> The firmware handles sensor failures gracefully - if DHT22 disconnects, it shows ERROR but continues logging analog data. If SD card fails, data still goes to serial monitor.
+> **This is a minimal demo** showing firmware works and compiles. The **physical system** will include:
+> - **NH₃-B1 electrochemical sensor** with potentiostatic front-end
+> - **SCD41 I²C sensor** for CO₂/temp/humidity
+> - **microSD card** for local CSV logging
+> - **RS-485 Modbus interface** for reference analyzer communication
 > 
-> This validates the firmware logic before physical hardware implementation. Physical deployment would replace joystick with proper electrochemical front-end and add RS-485 Modbus interface for reference analyzer."
+> Wokwi validates the firmware logic before hardware investment. The full firmware in the repo (`firmware/src/main.cpp`) includes modular architecture for all these components."
 
 ---
 
