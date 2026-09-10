@@ -1,148 +1,211 @@
 # Wokwi Virtual Hardware Setup
 
+## What is This?
+
+This is a **minimal Wokwi demonstration** that validates:
+- ✅ ESP32 firmware compilation
+- ✅ Sensor data acquisition (DHT22)
+- ✅ Serial output and CSV formatting
+- ✅ Error handling
+
+**Note:** This is intentionally simplified for interview demonstration. The physical system will include full sensor suite, logging, and communication interfaces.
+
 ## Quick Start
 
 1. Go to https://wokwi.com/
-2. Sign in (use your token if needed: `wok_OElZHEOtuF0wdR5TbVIAnYHkPp0bMIzWa1040fab`)
-3. Create new project: **Arduino ESP32**
+2. Sign in (token if needed: `wok_OElZHEOtuF0wdR5TbVIAnYHkPp0bMIzWa1040fab`)
+3. Create new project: **ESP32** (plain, not Arduino)
 4. Replace `diagram.json` with contents from `wokwi/diagram.json` in this repo
 5. Replace `sketch.ino` with contents from `wokwi/sketch.ino` in this repo
-6. Click "▶ Start Simulation"
-7. Watch serial monitor for data output and status LED for system health
+6. Add library via Library Manager or create `libraries.txt` with:
+   ```
+   DHT sensor library for ESPx
+   ```
+7. Click "▶ Start Simulation"
+8. Watch serial monitor for data output every 5 seconds
 
-## What the Simulation Demonstrates
+## Hardware Components (Minimal Demo)
 
-### Hardware Components
+| Component | Role | Physical System Equivalent |
+|-----------|------|----------------------------|
+| **ESP32-DevKit-v1** | Main microcontroller | ESP32-WROOM-32E (as documented) |
+| **DHT22** | Digital temp/humidity sensor | SCD41 (I²C) + electrochemical sensors |
+| **10kΩ Resistor** | DHT22 pull-up | Required per DHT22 datasheet |
 
-- **ESP32 DevKit v1** - Main microcontroller
-- **DHT22** - Temperature and humidity sensor (GPIO4, digital interface with 10kΩ pull-up)
-- **Analog Joystick** - Simulates analog gas sensor output (GPIO34, ADC1_CH6) - vertical axis only
-- **microSD Card** - Local data logging (SPI: CS=5, SCK=18, MISO=19, MOSI=23)
-- **Status LED** - System health indicator (GPIO2 with 220Ω resistor)
+### Components NOT in This Demo
+These are in the physical system design:
+- **NH₃-B1 Electrochemical Sensor** (requires potentiostatic amplifier)
+- **SCD41 CO₂ Sensor** (I²C, 400-5000 ppm range)
+- **microSD Card** (CSV logging, FAT32)
+- **RS-485 Interface** (Modbus RTU for reference analyzer)
+- **12V Power System** (buck converters, protection)
 
-### Pin Connections
+## Pin Connections
 
-| Component | ESP32 GPIO | Interface | Notes |
-|-----------|------------|-----------|-------|
-| DHT22 DATA | GPIO4 | Digital (1-wire) | 10kΩ pull-up to 3.3V |
-| Joystick VERT | GPIO34 (ADC1_CH6) | Analog input | 0-3.3V, simulates gas sensor |
-| SD CS | GPIO5 | SPI | Check strapping at boot |
-| SD SCK | GPIO18 | SPI | Hardware SPI bus |
-| SD MISO | GPIO19 | SPI | |
-| SD MOSI | GPIO23 | SPI | |
-| Status LED | GPIO2 | Digital output | 220Ω current-limiting resistor |
+| ESP32 Pin | Connected To | Purpose |
+|-----------|--------------|---------|
+| **3.3V** | DHT22 VCC, Resistor | Power supply |
+| **GND** | DHT22 GND | Ground reference |
+| **GPIO 4** | DHT22 DATA (via 10kΩ pull-up) | Temperature/humidity |
 
-## Simulation vs. Physical Hardware
+### Additional Pins in Physical System
+See `firmware/src/main.cpp` for full pin mapping:
+- **GPIO 34** - NH₃-B1 analog input (ADC1_CH6)
+- **GPIO 21/22** - I²C (SDA/SCL) for SCD41
+- **GPIO 5,18,19,23** - SPI for microSD card
+- **GPIO 16/17** - UART2 for RS-485 Modbus
 
-### What Wokwi Simulates
+## Expected Serial Output
 
-✅ ESP32 firmware compilation and execution  
-✅ Digital sensor protocols (DHT22, I²C, SPI)  
-✅ ADC acquisition (analog input simulation)  
-✅ Serial monitor output  
-✅ SD card file system operations  
-✅ Logic-level behavior and timing  
+```
+=== Agricultural IoT Monitoring System ===
+Virtual Hardware Demo for ATB Interview
+==========================================
 
-### What Wokwi Does NOT Validate
+[OK] System initialized
 
-❌ Real electrochemical sensor response  
-❌ Analog circuit performance (noise, drift, temperature effects)  
-❌ Power consumption and thermal behavior  
-❌ RS-485 electrical characteristics  
-❌ EMC/EMI in agricultural environment  
-❌ Long-term reliability and sensor aging  
-❌ Physical vibration and environmental stress  
+Sampling every 5 seconds...
 
-## Physical Implementation Requirements
+Time,Sequence,Temp(C),Humidity(%),Status
+------------------------------------------
+00:00:05,0,22.0,50.0,OK
+00:00:10,1,22.0,50.0,OK
+00:00:15,2,22.0,50.0,OK
+------------------------------------------
+[INFO] 10 samples acquired
+------------------------------------------
+```
 
-For production deployment, the Wokwi simulation must be complemented with:
+### Data Format
+- **Time**: HH:MM:SS elapsed since startup
+- **Sequence**: Sample number (increments each cycle)
+- **Temp(C)**: Temperature from DHT22 (°C)
+- **Humidity(%)**: Relative humidity from DHT22 (%)
+- **Status**: `OK` or `SENSOR_FAIL`
 
-### 1. Electrochemical Front-End
-- Alphasense NH₃-B1 sensor
+## Testing Scenarios
+
+### 1. Normal Operation ✅
+- DHT22 connected and powered
+- Serial output shows `Status = OK`
+- Temperature ~22°C, Humidity ~50% (Wokwi defaults)
+
+### 2. Simulate Sensor Failure ❌
+**Steps:**
+1. Click **Stop** (⏹) in Wokwi
+2. Click the **red wire** (DHT22 VCC to ESP32 3.3V)
+3. Press **Delete** to disconnect
+4. Click **Start** (▶)
+5. Watch serial output: `ERROR,ERROR,SENSOR_FAIL`
+
+### 3. Change Environmental Conditions 🌡️
+**Steps:**
+1. Click **Stop** (⏹)
+2. Click on **DHT22** component
+3. In right panel, set: `temperature: 30`, `humidity: 80`
+4. Click **Start** (▶)
+5. Watch updated values in serial output
+
+## Troubleshooting
+
+### ❌ `DHTesp.h: No such file or directory`
+**Solution:**
+- Click 📚 (Library Manager)
+- Search: **"DHT sensor library for ESPx"** (exact name)
+- Click "Add to project"
+
+### ❌ `DHT sensor timeout` in serial
+**Solution:**
+- Check 10kΩ resistor between 3.3V and GPIO 4
+- Verify DHT22 VCC connected to 3.3V (not GND)
+- Make sure DHT22 DATA connected to GPIO 4 via resistor
+
+### ❌ Serial shows garbage text
+**Solution:**
+- Check baud rate = **115200**
+- Click ↻ (Reset) on ESP32 in simulation
+
+### ❌ `ValueError: Review changed wiring...`
+**Solution:**
+- Copy **entire** `diagram.json` content (don't modify)
+- Use provided files exactly as-is
+- Don't change pin numbers manually
+
+## Why This Minimal Demo?
+
+### ✅ What It Validates
+- ESP32 firmware compiles correctly
+- Sensor acquisition loop works (5-second interval)
+- CSV data formatting is correct
+- Error detection and handling works
+- Serial communication is functional
+
+### ❌ What It Does NOT Validate
+- Real electrochemical sensor response (NH₃-B1 requires analog front-end)
+- I²C communication (SCD41 sensor)
+- microSD card file operations
+- RS-485 Modbus protocol
+- Power consumption and thermal behavior
+- Analog circuit noise and drift
+- Long-term reliability in agricultural environment
+
+### Why Keep It Simple?
+1. **Focus**: Demo shows firmware works, not hardware complexity
+2. **Clarity**: Easier walkthrough in 15-minute interview
+3. **Reliability**: No Wokwi validation errors
+4. **Honesty**: Clear separation "demo" vs "physical requirements"
+
+## Physical System Implementation
+
+The full firmware in `firmware/src/main.cpp` includes modular architecture for:
+
+### 1. NH₃-B1 Electrochemical Sensor
 - Potentiostatic amplifier (not simple TIA)
 - +200 mV bias voltage generation
-- Temperature compensation circuit
-- Low-noise op-amp (e.g., OPA2333)
+- Temperature compensation
+- ADC acquisition with anti-aliasing filter
 
-### 2. Environmental Sensor
-- Sensirion SCD41 or equivalent (I²C)
-- Proper pull-up resistor sizing for bus capacitance
-- ASC behavior evaluation for agricultural application
+### 2. SCD41 CO₂ Sensor
+- I²C communication (Wire library)
+- ASC configuration for livestock environment
+- 400-5000 ppm specified accuracy range
 
-### 3. RS-485 Interface
-- MAX3485 or equivalent 3.3V transceiver
-- 120Ω termination resistors (at bus ends only)
-- Failsafe biasing (560Ω pull-up/down at master)
-- Shielded twisted-pair cable (e.g., Belden 3105A)
+### 3. Data Logging
+- microSD card (SPI interface)
+- FAT32 filesystem
+- CSV format with timestamped records
+- Fault tolerance (continues if SD fails)
 
-### 4. Power Supply
-- 12V DC input (agricultural automation standard)
-- RECOM R-78E3.3-1.0 or equivalent switching regulator
-- Input surge protection (TVS diode)
-- Reverse polarity protection (P-channel MOSFET)
-- Proper decoupling and filtering
+### 4. RS-485 Modbus RTU
+- MAX3485 transceiver
+- 120Ω termination resistors
+- Failsafe biasing
+- Reference analyzer communication
 
-### 5. Enclosure and Protection
-- IP65-67 rated enclosure
-- M16 cable glands
-- Desiccant for condensation management
-- Breathing membrane (optional)
+### 5. Power System
+- 12V DC input (agricultural standard)
+- Buck converters (5V, 3.3V)
+- Surge protection (TVS diode)
+- Reverse polarity protection
+- EMC filtering
 
-## Firmware Features Demonstrated
+## Interview Talking Points
 
-- Modular architecture (Sensors, Logger, Telemetry, Quality, FaultManager)
-- Independent acquisition scheduling (not blocked by telemetry)
-- SD card logging with fault tolerance
-- MQTT queue with bounded memory and overflow counting
-- Quality evaluation and flagging (preserves raw data)
-- System state tracking and event logging
-- Optional RS-485 Modbus RTU transport (compile-time flag)
+When demoing this simulation, emphasize:
 
-## Running the Simulation
-
-### Expected Serial Output
-
-```
-=== Agricultural Emission Monitoring System ===
-Virtual Hardware Demonstration
-==============================================
-
-[OK] DHT22 initialized
-[OK] SD card initialized
-[OK] Data file created: /data.csv
-
-[INFO] System ready - acquiring data every 5 seconds
-timestamp,sequence,temp_c,humidity_pct,gas_raw,gas_voltage,sd_status
-----------------------------------------------------------------
-00:00:05,0,22.5,65.0,2048,1.650,OK
-00:00:10,1,22.5,65.0,2050,1.651,OK
-00:00:15,2,22.5,65.1,2045,1.647,OK
-```
-
-### Status LED Behavior
-
-- **ON (Green)**: Environmental sensor OK + Storage OK
-- **OFF**: Sensor failure or SD card unavailable
-
-### Common Issues
-
-1. **SD card not initializing**: Check SPI pin connections, verify CS=5
-2. **DHT22 read errors**: Ensure 10kΩ pull-up on DATA line
-3. **Compilation errors**: Use PlatformIO or Arduino IDE with ESP32 board support
-4. **No serial output**: Verify baud rate 115200
-
-## Next Steps for Physical Validation
-
-1. **PCB Design**: Convert breadboard to 2-layer PCB with proper analog/digital isolation
-2. **Electrical Commissioning**: Verify all voltages, currents, and signal levels with multimeter/oscilloscope
-3. **Laboratory Calibration**: Multi-point calibration with certified reference gases (5, 10, 25, 50 ppm NH₃)
-4. **Bench Testing**: 24-hour continuous operation, fault injection, power cycling
-5. **Pilot Deployment**: Install in controlled agricultural environment with reference analyzer co-location
-6. **Field Validation**: Compare against established measurement methods per VERA protocol
+> "This Wokwi demo validates that the **firmware compiles and runs** on ESP32, with proper sensor acquisition timing and error handling.
+>
+> The physical system (documented in repo) includes:
+> - **NH₃-B1 electrochemical sensor** with potentiostatic amplifier
+> - **SCD41 CO₂ sensor** via I²C
+> - **microSD card** for local CSV logging
+> - **RS-485 Modbus** for reference analyzer communication
+>
+> The firmware architecture (`firmware/src/main.cpp`) is **modular** so each component can be added incrementally during hardware commissioning."
 
 ---
 
-**Document version:** 1.0  
+**Document version:** 2.0  
 **Date:** September 10, 2026  
 **Author:** R. Abdollahipour  
-**Purpose:** Wokwi simulation guide for ATB application portfolio
+**Purpose:** Minimal Wokwi demo guide for ATB interview
