@@ -1,19 +1,21 @@
 # Agricultural IoT Emission Monitoring System
 ## Engineering Portfolio for MARVELA/ATB PostDoc Application
 
-**A production-ready design demonstrating end-to-end competency in IoT sensor system development, integration, and validation for agricultural research**
+**A virtual commissioning and pre-deployment engineering prototype demonstrating sensor system development, embedded integration, communication protocols, and validation methodology for agricultural emission monitoring research**
 
 ---
 
 ## Project Overview
 
-This repository presents a **complete engineering workflow** for developing an IoT-based emission monitoring system for livestock buildings, directly aligned with the MARVELA project requirements and ATB research needs. Unlike purely simulated demonstrations, this project shows:
+This repository presents an **engineering design and implementation workflow** for IoT-based emission monitoring systems in livestock buildings, directly aligned with MARVELA project requirements and ATB research needs. This is a virtual commissioning prototype demonstrating:
 
-✅ **Real sensor selection** with datasheet analysis and justification  
-✅ **Professional circuit design** with power supply, protection, and industrial interfaces  
-✅ **Practical integration** of electrochemical sensors, I²C modules, RS-485 Modbus, and local storage  
-✅ **Field deployment strategy** with installation details, maintenance protocols, and QA procedures  
-✅ **Complete documentation** suitable for research collaboration and technology transfer  
+✅ **Engineering sensor selection** with datasheet analysis and justification  
+✅ **Design-stage circuit schematics** with power supply, protection, and interface specifications  
+✅ **Embedded firmware** with modular architecture for acquisition, logging, QA/QC, and communication  
+✅ **Deployment planning** with installation strategy, environmental considerations, and maintenance protocols  
+✅ **Validation methodology** suitable for laboratory calibration and field campaigns  
+
+**Current status:** Virtual commissioning and software implementation complete. Physical hardware assembly, laboratory calibration, and farm deployment are planned future experimental stages  
 
 **Target application:** Continuous monitoring of NH₃, CO₂, temperature, and humidity in dairy cow barns for emission inventory and mitigation research.
 
@@ -21,32 +23,38 @@ This repository presents a **complete engineering workflow** for developing an I
 
 ## Key Demonstrations
 
-### 1. **Hardware Engineering**
-- **Sensor Selection:** Alphasense NH₃-B1 electrochemical sensor + Sensirion SCD41 CO₂/T/RH module
-  - Justified based on agricultural research requirements, cost-effectiveness, and field reliability
-  - Full datasheet specifications, calibration requirements, and expected performance documented
+### 1. **Hardware Engineering and Design**
+- **Sensor Selection:** Alphasense NH₃-B1 electrochemical sensor (proposed) + Environmental sensors
+  - Engineering justification based on agricultural research requirements and datasheet specifications
+  - Comparative analysis documented with expected performance characteristics
 - **Microcontroller:** ESP32-WROOM-32E selected over STM32, Arduino, Raspberry Pi
   - Comparative analysis of 4 platforms across 10 criteria (see [hardware_selection.md](docs/hardware_selection.md))
-- **Circuit Design:** Complete schematics with:
-  - 12V DC input with surge protection, reverse polarity protection, and switching regulation
-  - Electrochemical sensor signal conditioning (transimpedance amplifier, anti-aliasing filter)
-  - RS-485 Modbus RTU interface (MAX3485) with proper termination and biasing
-  - I²C sensor bus with calculated pull-up resistors
-  - microSD SPI interface for local data logging
-  - **BOM:** €155 per node (1/8 the cost of commercial systems)
+- **Circuit Design References:** Design-stage schematics including:
+  - 12V DC input with surge protection, reverse polarity protection, and switching regulation concepts
+  - Electrochemical sensor front-end considerations (potentiostatic amplifier requirements for biased sensors)
+  - RS-485 Modbus RTU interface (MAX3485) with termination and biasing topology
+  - I²C sensor bus design with pull-up calculations
+  - microSD SPI interface specifications
+  - **Estimated component cost:** €150-200 per node (design estimate, not validated procurement)
 
-📄 **See detailed schematics:** [docs/circuit_design.md](docs/circuit_design.md)
+📄 **See design references:** [docs/circuit_design.md](docs/circuit_design.md)  
+⚠️ **Note:** Physical PCB, assembly, and electrical commissioning remain future experimental stages
 
 ### 2. **Communication Interfaces**
-- **RS-485 Modbus RTU:** Industry-standard protocol for reference analyzer integration
+- **RS-485 Modbus RTU:** Protocol implementation for reference analyzer integration
   - Frame-level examples with CRC calculation
   - UART configuration (9600 baud, 8E1, timing analysis)
-  - Bus topology with 120Ω termination and failsafe biasing
-- **I²C:** Multi-sensor local bus (SCD41 CO₂/RH/T)
-  - Address configuration, clock speed selection, pull-up sizing
-- **SPI:** High-speed microSD card interface
-  - FAT32 file system, continuous logging, 32GB capacity = 2 years
-- **WiFi/MQTT:** Wireless telemetry with QoS 1 acknowledgment (optional)
+  - Bus topology design with 120Ω termination and failsafe biasing
+  - **Status:** Protocol logic implemented and host-tested; physical RS-485 electrical commissioning not yet performed
+- **I²C:** Local sensor bus design
+  - Address configuration, clock speed selection, pull-up resistor calculations
+  - **Status:** Bus design documented; firmware I²C driver not yet implemented
+- **SPI:** microSD card interface (implemented)
+  - FAT32 file system, continuous logging capability
+  - Implemented in firmware with CSV format
+- **WiFi/MQTT:** Wireless telemetry (implemented)
+  - PubSubClient library, QoS 0 (fire-and-forget)
+  - Bounded RAM queue with explicit overflow handling
 
 ### 3. **Agricultural Deployment**
 - **Real-world context:** Dairy cow barn with 100 animals, mechanical ventilation
@@ -69,21 +77,23 @@ This repository presents a **complete engineering workflow** for developing an I
 
 ### 5. **Software Implementation**
 - **Firmware (ESP32):** Modular C++ codebase
-  - Sensor drivers: DHT22 (digital demo), ADC for electrochemical, I²C for SCD41
-  - Modbus client: Shared Python/C++ implementation, host-testable
-  - SD card logging: CSV format with fault-tolerant writes
-  - MQTT telemetry: Bounded RAM queue, network retry logic
-  - System health: LED indicators, watchdog timer, reset cause logging
-- **Digital Twin (Python):** Simulation for pre-deployment testing
+  - Sensor drivers: DHT22 (demonstration), ADC for analog acquisition
+  - Modbus client: Shared Python/C++ protocol implementation, host-testable
+  - SD card logging: CSV format with fault-tolerant writes (implemented)
+  - MQTT telemetry: QoS 0 with bounded RAM queue, network retry logic (implemented)
+  - System health: LED indicators, reset cause logging
+  - **Note:** Physical sensor integration (NH₃-B1, SCD41) and RS-485 hardware transport are future implementation stages
+- **Virtual Commissioning Environment (Python):** Simulation for pre-deployment workflow validation
   - Synthetic barn environment with diurnal patterns
-  - Fault injection (sensor, network, storage)
+  - Fault injection (sensor, network, storage) for robustness testing
   - Quality flags (range, missing, abrupt changes)
   - Calibration workflow with holdout validation
-- **Dashboard (Streamlit):** Live monitoring interface
-  - Sensor readings, system state, pending telemetry
-  - Fault injection controls
-  - Calibration/validation page with Bland-Altman plots
-  - Modbus commissioning bench
+  - Provides software foundation for future physical integration
+- **Dashboard (Streamlit):** Monitoring interface for virtual system
+  - Sensor state visualization, system health, pending telemetry
+  - Fault injection controls for testing
+  - Calibration/validation page with statistical analysis
+  - Modbus commissioning bench (protocol-level simulation)
 
 📸 **Dashboard screenshots:** [docs/figures/dashboard_overview.png](docs/figures/dashboard_overview.png)
 
@@ -105,6 +115,35 @@ This repository presents a **complete engineering workflow** for developing an I
 
 ---
 
+## Implementation Status
+
+To provide complete transparency for reviewers, the following table summarizes the current implementation status of each subsystem:
+
+| Component/Feature | Status | Evidence |
+|-------------------|--------|----------|
+| **Firmware Architecture** | ✅ Implemented and tested | Modular C++ code, automated pytest/native tests |
+| **ESP32 Acquisition** | ✅ Implemented | DHT22 digital, ADC analog acquisition |
+| **SD Card Logging** | ✅ Implemented | SPI interface, CSV format, fault handling |
+| **MQTT Telemetry** | ✅ Implemented | QoS 0, bounded queue, network retry (PubSubClient) |
+| **Modbus RTU Protocol** | ✅ Implemented (software) | Python/C++ shared implementation, host-tested |
+| **Virtual Commissioning Environment** | ✅ Implemented | Python simulation, fault injection, QA/QC |
+| **Validation Methodology** | ✅ Implemented | Chronological holdout, statistical metrics, Bland-Altman |
+| **Dashboard** | ✅ Implemented | Streamlit interface for virtual system |
+| **Circuit Design** | 📋 Design-stage | Schematics and specifications documented |
+| **RS-485 Hardware** | ⏳ Future implementation | Electrical commissioning not performed |
+| **I²C Firmware Driver** | ⏳ Future implementation | Bus design documented, driver not coded |
+| **NH₃-B1 Integration** | ⏳ Future implementation | Sensor selected, front-end requires potentiostat design |
+| **SCD41 Integration** | ⏳ Future implementation | Module selected, firmware integration pending |
+| **Laboratory Calibration** | ⏳ Future experimental stage | Protocol documented, physical experiment not performed |
+| **Field Deployment** | ⏳ Future experimental stage | Strategy documented, installation not performed |
+
+**Legend:**
+- ✅ **Implemented and tested** - Coded, tested, and verified in virtual/host environment
+- 📋 **Design-stage** - Documented with specifications and engineering rationale
+- ⏳ **Future implementation** - Planned with clear requirements; not yet executed
+
+---
+
 ## Alignment with MARVELA/ATB Job Requirements
 
 This portfolio directly addresses the 8 key tasks listed in the ATB job advertisement (reference 2026-SM-3):
@@ -112,11 +151,11 @@ This portfolio directly addresses the 8 key tasks listed in the ATB job advertis
 | Job Requirement | Evidence in This Portfolio |
 |-----------------|----------------------------|
 | **Further development and optimization of modular IoT-based sensor systems** | • Modular firmware architecture (see [architecture.md](docs/architecture.md))<br>• Separable modules: sensors, logger, telemetry, quality, fault manager<br>• Designed for multi-node expansion (Node A: exhaust, Node B: slurry pit) |
-| **Integration of sensors, embedded electronics, data loggers, power supplies and communication interfaces** | • Complete circuit design (see [circuit_design.md](docs/circuit_design.md))<br>• Electrochemical sensor + transimpedance amplifier + ADC chain<br>• I²C sensor integration (SCD41)<br>• microSD local logging (2-year capacity)<br>• 12V power supply with surge/reverse protection<br>• RS-485 Modbus RTU interface |
+| **Integration of sensors, embedded electronics, data loggers, power supplies and communication interfaces** | • Design-stage circuit schematics (see [circuit_design.md](docs/circuit_design.md))<br>• Electrochemical sensor front-end design considerations<br>• microSD local logging implemented (firmware)<br>• Power supply topology with protection concepts<br>• RS-485 Modbus RTU protocol logic (host-tested)<br>• Physical integration and electrical commissioning: future stage |
 | **Programming and configuration of microcontrollers, device interfaces and automated data-acquisition systems** | • ESP32 firmware: C++ with ESP-IDF/Arduino framework<br>• UART/I²C/SPI/ADC driver implementation<br>• Automated 5-second acquisition schedule<br>• Network retry logic, fault recovery<br>• Python data processing and analysis |
-| **Knowledge of common device interfaces and communication protocols (I²C, SPI, UART, RS-485, Modbus)** | • **I²C:** SCD41 sensor with address, clock config, CRC validation<br>• **SPI:** microSD card with FAT32 file system<br>• **UART:** Serial console + UART2 for Modbus<br>• **RS-485:** MAX3485 physical layer, termination, biasing<br>• **Modbus RTU:** FC03 read registers, CRC-16, frame timing |
+| **Knowledge of common device interfaces and communication protocols (I²C, SPI, UART, RS-485, Modbus)** | • **I²C:** Bus design with pull-up calculations, address configuration<br>• **SPI:** microSD card interface implemented with FAT32 file system<br>• **UART:** Serial console implemented, UART2 abstraction for Modbus<br>• **RS-485:** Bus topology with termination and biasing design<br>• **Modbus RTU:** FC03 protocol implementation, CRC-16, frame timing (host-tested) |
 | **Planning and conducting laboratory tests, calibrations and measurement campaigns** | • Documented calibration protocol (see [deployment_guide.md](docs/deployment_guide.md#calibration-and-maintenance-schedule))<br>• Multi-point (5, 10, 25, 50 ppm), temperature, humidity tests<br>• Field maintenance schedule (daily to annual)<br>• Two-point field checks with acceptance criteria<br>• Campaign simulation with SQLite spool |
-| **Validation of low-cost and mid-cost sensors against state-of-the-art reference measurement instruments** | • Alphasense NH₃-B1 (€45) vs. chemiluminescence reference (€30k+)<br>• Performance targets: R² > 0.90, bias < 15%<br>• Holdout validation workflow (60/40 train/test split)<br>• Bland-Altman agreement plots<br>• Documented uncertainty budget (±18-40% combined) |
+| **Validation of low-cost and mid-cost sensors against state-of-the-art reference measurement instruments** | • Validation methodology documented (chronological holdout)<br>• Statistical metrics: R², bias, MAE, RMSE, Bland-Altman plots<br>• Synthetic workflow demonstrates protocol implementation<br>• Uncertainty budget framework documented<br>• Physical sensor validation: future experimental stage |
 | **Development and implementation of quality-assurance procedures, measurement protocols and technical documentation** | • Real-time QA flags: range, timeout, abrupt change, calibration due<br>• Statistical checks: uptime, baseline stability, correlation<br>• Flagged data retained (not deleted) for traceability<br>• Comprehensive docs: 7+ technical documents, 200+ pages total |
 | **Processing, quality control, statistical analysis and interpretation of measurement data** | • Python analysis scripts with pandas, scipy, matplotlib<br>• Time-series QA: completeness, diurnal patterns, cross-correlation<br>• Statistical validation: bias, MAE, RMSE, R², residual analysis<br>• Emission rate calculation (concentration × ventilation) |
 
@@ -300,34 +339,29 @@ Start with [job alignment and staged experiments](docs/marvela_alignment.md), th
 | [Interview demo](docs/interview_demo.md) | Short scripts |
 | [ThingsBoard](thingsboard/README.md) | Optional TLS MQTT setup |
 
-## Cost Analysis and Scalability
+## Indicative Component Cost Analysis
 
-### Per-Node Cost Breakdown
+### Estimated Per-Node Component Cost
 
-| Component | Unit Cost | Comments |
-|-----------|-----------|----------|
-| Alphasense NH₃-B1 sensor | €45 | 2-3 year lifetime |
-| Sensirion SCD41 (CO₂/T/RH) | €35 | No calibration required (year 1) |
-| ESP32-WROOM-32E module | €5 | Industrial temperature range |
-| MAX3485 RS-485 transceiver | €3 | 3.3V compatible |
-| RECOM power supply + protection | €10 | Surge, reverse polarity protected |
-| OPA2333 op-amp (TIA) | €3 | Low-noise, chopper-stabilized |
-| microSD card (32GB, high endurance) | €12 | 2-year data capacity |
-| Hammond IP67 enclosure | €18 | Transparent lid, DIN-rail mount |
-| PCB (2-layer, assembled) | €15 | Volume pricing |
-| Passives, connectors, cables | €15 | Resistors, capacitors, cable glands |
-| **Total per node** | **€155** | |
+| Component | Estimated Cost | Comments |
+|-----------|----------------|----------|
+| Alphasense NH₃-B1 sensor | €40-50 | Electrochemical, 2-3 year lifetime |
+| Environmental sensor module | €30-40 | I²C digital output |
+| ESP32-WROOM-32E module | €4-6 | Industrial temperature range |
+| RS-485 transceiver | €2-4 | 3.3V compatible |
+| Power supply + protection | €8-12 | Switching regulator with protection |
+| Signal conditioning | €5-10 | Op-amp, passive components |
+| microSD card (32GB) | €10-15 | High-endurance grade |
+| Enclosure (IP65-67) | €15-25 | Environmental protection |
+| PCB (2-layer, assembled) | €10-20 | Prototype to low-volume estimate |
+| Connectors, cables, hardware | €10-20 | Installation materials |
+| **Estimated total** | **€150-210** | **Excludes:** calibration, integration labor, certification, operation |
 
-**Comparison to commercial systems:**
-- Vaisala CARBOCAP GM70 (CO₂ only): €800+
-- Dräger X-am 2500 (portable multi-gas): €1,200+
-- **This system (NH₃ + CO₂ + T/RH + data logging):** €155 (10% of commercial cost)
-
-**Scalability for MARVELA (100-node deployment):**
-- Volume discount (~30%): €108 per node
-- Total hardware cost: €10,800
-- Commercial equivalent: €120,000+
-- **Cost savings: €109,200 (91% reduction)**
+**Important notes:**
+- These are **component cost estimates only**, not validated procurement quotes
+- **Excludes:** Engineering time, calibration equipment, reference analyzers, sampling hardware, quality assurance, certification, testing, maintenance, sensor replacements, field labor, data infrastructure
+- **Not economically comparable to commercial calibrated systems** without accounting for total system lifecycle costs
+- **For research budgeting:** Add minimum 2-3× multiplier for integration, validation, and operation costs
 
 ### Development to Deployment Timeline
 
@@ -346,10 +380,11 @@ Start with [job alignment and staged experiments](docs/marvela_alignment.md), th
 Based on ATB research needs and MARVELA objectives, the system can be extended with:
 
 ### 1. Multi-Gas Expansion (MARVELA Priority)
-- **Add CH₄ sensor:** Alphasense IRC-A1 (NDIR, 0-5000 ppm, €90, Modbus)
-- **Add N₂O sensor:** Alphasense N2O-A1 (NDIR, 0-100 ppm, €95, Modbus)
-- **Total cost increase:** +€185 per node → €340 total
-- **Benefit:** Complete greenhouse gas inventory (CO₂-eq calculation)
+- **Add CH₄ sensor:** NDIR sensor appropriate for agricultural range (e.g., 0-1000 ppm)
+- **Add N₂O sensor:** Electrochemical or NDIR sensor for trace-level measurement
+- **Requirements:** Modbus or I²C interface, agricultural humidity tolerance, periodic calibration protocol
+- **Benefit:** Complete greenhouse gas inventory (CO₂-equivalent calculation)
+- **Note:** Specific sensor selection requires datasheet validation and cost-performance analysis
 
 ### 2. LoRaWAN Option (Long-range connectivity)
 - **Replace WiFi with:** RFM95W LoRa module (868 MHz EU, €8)
@@ -483,13 +518,14 @@ If you use this work in research, please cite:
 **R. Abdollahipour**  
 **Application for:** Scientist (PostDoc) — IoT-based sensor systems for environmental monitoring  
 **Position reference:** 2026-SM-3  
-**Institution:** Leibniz Institute for Agricultural Engineering and Bioeconomy (ATB), Potsdam
+**Target institution:** Leibniz Institute for Agricultural Engineering and Bioeconomy (ATB), Potsdam
 
-**Repository:** [https://github.com/[username]/agri-emissions-iot-digital-twin](https://github.com/[username]/agri-emissions-iot-digital-twin)  
-**Documentation:** See [docs/](docs/) folder for detailed technical documents  
-**Questions:** Open an issue on GitHub or contact via ATB application portal
+**Repository:** [https://github.com/Rz-C137/agri-emissions-iot-digital-twin](https://github.com/Rz-C137/agri-emissions-iot-digital-twin)  
+**Documentation:** See [docs/](docs/) folder for technical design documents  
+**Questions:** Open an issue on GitHub for technical discussion
 
 ---
 
 **Last updated:** September 10, 2026  
-**Version:** 2.0 (Professional engineering portfolio)
+**Version:** 2.0 (Engineering methodology demonstration)  
+**Status:** Virtual commissioning and software implementation complete; physical integration planned

@@ -111,7 +111,26 @@ Input (J1)
 | C1 | EEU-FR1V102 | 1000µF, 35V, low-ESR | Input filtering |
 | C2 | GRM31CR71C107KA01L | 100µF, 16V, X7R | Output filtering |
 
-### 2. NH₃ Sensor and Signal Conditioning
+### 2. NH₃ Sensor Front-End Design Considerations
+
+**⚠️ IMPORTANT ENGINEERING NOTE:**
+
+The Alphasense NH3-B1 is a **biased three-electrode electrochemical sensor** requiring approximately **+200 mV bias voltage** between working and reference electrodes. The simplified schematic below is **conceptual only** and does not represent a complete production-ready design.
+
+**A proper implementation requires:**
+- **Potentiostatic amplifier circuit** or dedicated electrochemical AFE IC (e.g., TI LMP91000 series)
+- Bias voltage generation and regulation circuitry
+- Reference electrode buffer amplifier
+- Temperature compensation with characterized coefficients
+- Manufacturer application notes or validated reference design
+
+**Sensor specifications (verify with current Alphasense NH3-B1 datasheet at procurement):**
+- Sensitivity: 20-60 nA/ppm (typical, per current datasheet)
+- Bias voltage: +200 mV required
+- Response time: T90 < 150 seconds
+- Refer to: [https://www.alphasense.com/products/view-by-target-gas/nh3-b1](https://www.alphasense.com/products/view-by-target-gas/nh3-b1)
+
+**Simplified conceptual diagram (demonstration purposes):**
 
 ```
         3.3V
@@ -128,18 +147,17 @@ Input (J1)
          │          └───────────────────────►
          │
          │
-    NH₃-B1 Sensor
+    NH₃-B1 Sensor (Three-Electrode Biased Cell)
     ┌────────┐
-    │   WE   ├──────┐  Working Electrode
+    │   WE   ├──────┐  Working Electrode (current measurement point)
     │        │      │
-    │   RE   ├──────┤  Reference Electrode (connected to WE)
+    │   RE   ├──────┤  Reference Electrode (requires +200 mV bias vs WE)
     │        │      │
-    │   AE   ├──────┤  Auxiliary Electrode
+    │   CE   ├──────┤  Counter Electrode (bias current supply)
     └────────┘      │
                     │
-         Current    │
-         Output     │
-      (50-90nA/ppm) │
+         Current    │  ⚠️ NOTE: Actual sensitivity 20-60 nA/ppm
+         Output     │  (verify with datasheet; calculations below are illustrative)
                     │
     ┌───────────────▼──────────────┐
     │   Transimpedance Amplifier   │

@@ -16,60 +16,71 @@ Based on literature review of livestock building emissions:
 
 ## Selected Sensors
 
-### 1. Primary Sensor: Alphasense NH₃-B1 Electrochemical Sensor
+### 1. Primary Sensor Candidate: Alphasense NH₃-B1 Electrochemical Sensor
 
-**Why this sensor:**
-- Proven in agricultural research (cited in 15+ peer-reviewed papers)
-- Excellent selectivity for NH₃ over background gases
-- Operating range: 0-100 ppm with 0.5 ppm resolution
-- Cross-sensitivity < 5% to H₂S, CO, NO₂
-- Temperature range: -30°C to +50°C (suitable for livestock buildings)
-- Low power: < 50 mW
-- Response time: < 60 seconds (T90)
+**Engineering rationale for selection:**
+- Electrochemical sensors demonstrated in agricultural research applications
+- Suitable selectivity for NH₃ over typical background gases
+- Operating range compatible with livestock building concentrations (typical 5-50 ppm)
+- Temperature range: -30°C to +50°C (suitable for agricultural environments)
+- Moderate power consumption
+- Expected lifetime: 2-3 years in controlled agricultural environment
 
-**Datasheet specifications:**
-- Output: 50-90 nA/ppm (linear current output)
-- Load resistor: 33 Ω for voltage conversion
-- Bias voltage: 0 mV (no external bias required)
-- Expected lifetime: 2-3 years in agricultural environment
+**Datasheet specifications (NH3-B1, as of current Alphasense documentation):**
+- Sensitivity: 20-60 nA/ppm (typical, verify with current datasheet revision)
+- **Bias voltage: +200 mV required** (three-electrode biased sensor)
+- Response time: T90 < 150 seconds (verify with current datasheet)
 - Humidity range: 15-95% RH non-condensing
+- Reference: [Alphasense NH3-B1 product page](https://www.alphasense.com/products/view-by-target-gas/nh3-b1)
 
-**Signal conditioning requirements:**
-- Transimpedance amplifier (TIA) with 10-100 kΩ feedback resistor
-- Low-noise op-amp: OPA2333 or AD8628 (chopper-stabilized)
-- Anti-aliasing filter: 2nd-order Sallen-Key, fc = 0.5 Hz
-- Temperature compensation: on-board NTC thermistor (10 kΩ @ 25°C)
+**Front-end requirements:**
+- **Potentiostatic amplifier** for three-electrode electrochemical cell (WE, RE, CE)
+- Bias voltage generation and regulation (+200 mV)
+- Transimpedance amplifier for working electrode current measurement
+- Low-noise, low-offset op-amp (e.g., OPA2333, AD8628)
+- Temperature sensing for compensation (on-board NTC)
+- **Important:** Simple TIA alone is insufficient; requires proper potentiostatic control
+
+**Design notes:**
+- Feedback resistor sizing depends on target concentration range and ADC resolution
+- Verify exact bias voltage, sensitivity, and response time with manufacturer datasheet revision at time of procurement
+- Cross-sensitivity to H₂S, NO₂ should be characterized during laboratory calibration
+- Sensor front-end design should follow manufacturer application notes or validated electrochemical AFE reference design
 
 **Vendor:** Alphasense Ltd (UK)  
 **Part number:** NH3-B1  
 **Cost:** ~€40-50  
 **Datasheet:** [alphasense.com/wp-content/uploads/2023/10/NH3-B1.pdf](https://alphasense.com/wp-content/uploads/2023/10/NH3-B1.pdf)
 
-### 2. Secondary Sensor: Sensirion SCD41 CO₂/Temperature/Humidity Module
+### 2. Environmental Sensor Module (Example: Sensirion SCD41)
 
-**Why this sensor:**
-- Compact I²C module with proven reliability
+**Engineering rationale:**
+- I²C digital interface simplifies integration and reduces analog complexity
 - Simultaneous CO₂, temperature, and humidity measurement
-- CO₂ range: 0-40,000 ppm (for ventilation rate calculation)
-- Temperature: -10°C to +60°C, ±0.8°C accuracy
-- Humidity: 0-100% RH, ±6% accuracy
-- Low power: 0.4 mA average (1 sample/5 sec)
-- No calibration required for 1st year
+- CO₂ measurement relevant for ventilation rate calculation in emission inventory
+- Compact module format suitable for embedded integration
 
-**Why CO₂ instead of CH₄/N₂O for this demo:**
-- Demonstrates I²C integration
-- Essential for ventilation-based emission rate calculation
-- Lower cost than multi-gas NDIR sensors
-- Proven in agricultural monitoring systems
+**SCD41 specifications (example I²C sensor module):**
+- CO₂ measurement range: **400-5000 ppm (specified accuracy range)**, output up to 40,000 ppm
+- Temperature: -10°C to +60°C, ±0.8°C accuracy (specified range)
+- Humidity: 0-100% RH, ±6% RH accuracy
+- Interface: I²C (address 0x62), 100 kHz standard mode
+- Power: Average ~15 mA @ 3.3V in periodic mode; peak up to ~205 mA during measurement
+- **Automatic Self-Calibration (ASC):** Requires periodic exposure to ~400 ppm reference (outdoor air); may not be applicable in continuously occupied livestock buildings without explicit calibration protocol
 
-**For production MARVELA system, would specify:**
-- Alphasense IRC-A1 (CH₄, 0-5000 ppm, NDIR)
-- Alphasense N2O-A1 (N₂O, 0-100 ppm, NDIR)
-- Both with digital output and Modbus/I²C interface
+**Integration considerations:**
+- I²C pull-up resistor sizing based on bus capacitance and desired clock frequency
+- ASC behavior should be evaluated for agricultural deployment; may require manual calibration protocol
+- CO₂ measurement outside 400-5000 ppm range should be validated against reference if used for quantitative analysis
+
+**For multi-gas MARVELA expansion:**
+- CH₄ measurement: Requires NDIR sensor appropriate for 0-500 or 0-1000 ppm agricultural range
+- N₂O measurement: Requires trace-level sensor (< 5 ppm typical in livestock)
+- Specific sensor models should be selected based on validated datasheet specifications, not assumed part numbers
 
 **Vendor:** Sensirion AG (Switzerland)  
 **Part number:** SCD41  
-**Cost:** ~€35  
+**Estimated cost:** ~€30-40  
 **Datasheet:** [sensirion.com/resource/datasheet/scd4x](https://www.sensirion.com/resource/datasheet/scd4x)
 
 ## Microcontroller Selection
@@ -284,9 +295,12 @@ ESP32 GPIO5  (CS)   ──► SD CS
 ### Laboratory Phase (Required before field deployment)
 
 **Equipment:**
-- Certified NH₃ gas cylinders (5 ppm, 10 ppm, 25 ppm, 50 ppm)
-- Mass flow controllers (Brooks 5850S or equivalent)
-- Reference analyzer (e.g., Teledyne API T200 or equivalent)
+- Certified NH₃ gas cylinders (5 ppm, 10 ppm, 25 ppm, 50 ppm) - traceability to national/international standards
+- Mass flow controllers (Brooks or equivalent)
+- **Reference analyzer:** Traceable NH₃ analyzer appropriate for target concentration range (5-50 ppm)
+  - Example instruments: chemiluminescence, FTIR, cavity ring-down spectroscopy, or equivalent validated method
+  - Must be calibrated and maintained per manufacturer specifications
+  - **Note:** Instrument selection depends on concentration range, matrix compatibility, and laboratory availability
 - Climate chamber (controlled T and RH)
 
 **Protocol:**

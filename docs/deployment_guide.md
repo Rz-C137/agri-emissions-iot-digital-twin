@@ -444,32 +444,36 @@ C_tracer = Measured tracer concentration above background
 
 ---
 
-## Real-World Performance Expectations
+## Expected Performance Based on Literature
 
-### Based on Literature Review (Peer-reviewed studies)
+### Electrochemical NH₃ Sensors in Agricultural Environments
 
-**Alphasense NH₃-B1 in livestock settings:**
-- Study 1: Dairy barn, 6 months, R² = 0.88 vs. chemiluminescence analyzer (Koerkamp et al., 2020)
-- Study 2: Pig house, sensor drift 0.5 ppm/month, correctable with monthly cal (Smith et al., 2022)
-- Study 3: Poultry, high dust environment, filter replacement critical (2 weeks) (Zhang et al., 2024)
+**General findings from peer-reviewed field studies:**
+- Correlation with reference instruments: R² typically 0.80-0.95 (varies with calibration frequency, environmental control, and site conditions)
+- Sensor drift: 0.5-2 ppm/month (depends on exposure level, humidity, and maintenance protocol)
+- Calibration frequency: Monthly field checks recommended for agricultural applications
+- Sensor lifetime: 2-3 years typical in moderate-exposure agricultural settings; faster degradation in extreme conditions
 
-**Electrochemical sensor challenges:**
-- Cross-sensitivity to H₂S (pig/poultry, < 10% of NH₃ signal)
-- Drift in high humidity (> 85% RH), needs heated enclosure
-- Lifetime: 2-3 years typical, faster degradation in harsh sites
+**Common challenges in livestock environments:**
+- Cross-sensitivity to interfering gases (H₂S in pig/poultry facilities, NO₂, CO)
+- Drift in high humidity environments (> 85% RH) - may require heated enclosure or frequent calibration
+- Dust and particulate fouling - requires inlet filtration and regular maintenance
+- Temperature effects - requires compensation or controlled environment
 
-**System uptime (our target):**
-- > 95% data availability (allowing for maintenance, network outages)
-- < 5% flagged data (sensor faults, out-of-cal)
-- < 0.1% data loss (SD card + cloud redundancy)
+**Target system performance metrics:**
+- Data availability: > 95% (accounting for planned maintenance and network outages)
+- Data quality: < 5% flagged records (sensor timeouts, out-of-calibration, or quality limit exceedances)
+- Data loss: < 0.1% (achieved through local SD logging + remote storage redundancy)
 
 ---
 
 **Document version:** 1.0  
 **Date:** September 10, 2026  
 **Author:** R. Abdollahipour  
-**Purpose:** Deployment guide for MARVELA/ATB application portfolio  
-**References:**
-1. Koerkamp, P. W. G., et al. (2020). "Low-cost sensor performance in dairy barns." Biosystems Engineering, 195, 1-12.
-2. Smith, J. et al. (2022). "Electrochemical NH₃ sensors: Field validation." Agricultural Systems, 198, 103381.
-3. VERA Protocol (2018). "Verification of Environmental Technologies for Agricultural Production."
+**Purpose:** Deployment planning documentation for MARVELA/ATB application portfolio  
+**Status:** Design-stage planning; physical deployment and validation remain future experimental stages
+
+**Selected references:**
+1. Groot Koerkamp, P. W. G., et al. (1998). "Concentrations and emissions of ammonia in livestock buildings in Northern Europe." Journal of Agricultural Engineering Research, 70(1), 79-95.
+2. VERA Protocol (2018). "Verification of Environmental Technologies for Agricultural Production."
+3. ISO 16000-1:2004. "Indoor air - Part 1: General aspects of sampling strategy."
