@@ -19,10 +19,28 @@ COLORS = {
 }
 
 
+def _canonical_pin(pin: str) -> str:
+    """Normalize Wokwi part ids and SPI pin aliases to the firmware contract."""
+    part, signal = pin.split(":", 1)
+    if part.startswith("dht"):
+        part = "dht"
+    elif part in {"pullup", "r1", "dht_pullup"}:
+        part = "pullup"
+    elif part in {"joystick", "potentiometer", "gas_analog"} and signal in {"VERT", "SIG", "AO"}:
+        part, signal = "gas", "AO"
+    if part == "sd":
+        signal = {"DO": "MISO", "DI": "MOSI"}.get(signal, signal)
+    return f"{part}:{signal}"
+
+
+def _canonical_edge(a: str, b: str) -> frozenset[str]:
+    return frozenset((_canonical_pin(a), _canonical_pin(b)))
+
+
 def wiring() -> dict:
     """Extract and cross-check pins; refuse to draw a stale wiring contract."""
     diagram = json.loads((ROOT / "wokwi/diagram.json").read_text())
-    edges = {frozenset(row[:2]) for row in diagram["connections"]}
+    edges = {_canonical_edge(row[0], row[1]) for row in diagram["connections"]}
     config = (ROOT / "firmware/include/Config.h").read_text()
     pins = {
         key: int(re.search(rf"\b{key}\s*=\s*(\d+)", config)[1])
@@ -33,8 +51,8 @@ def wiring() -> dict:
         ("gas:AO", f"esp:D{pins['GAS_PIN']}"),
         ("sd:CS", f"esp:D{pins['SD_CS']}"),
         ("sd:SCK", "esp:D18"),
-        ("sd:DO", "esp:D19"),
-        ("sd:DI", "esp:D23"),
+        ("sd:MISO", "esp:D19"),
+        ("sd:MOSI", "esp:D23"),
         ("dht:VCC", "esp:3V3"),
         ("sd:VCC", "esp:3V3"),
         ("gas:VCC", "esp:VIN"),
@@ -45,7 +63,7 @@ def wiring() -> dict:
         ("pullup:2", "dht:SDA"),
     ]
     for a, b in expected:
-        if frozenset((a, b)) not in edges:
+        if _canonical_edge(a, b) not in edges:
             raise ValueError(f"Review changed wiring before drawing: {a} -> {b}")
     # Logger uses Arduino ESP32's default SPI bus; do not invent an explicit SPI.begin call.
     if "SD.begin(Config::SD_CS)" not in (ROOT / "firmware/src/Logger.cpp").read_text():

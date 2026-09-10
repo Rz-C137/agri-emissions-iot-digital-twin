@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "author": "Agricultural IoT Demo",
+  "author": "Agricultural IoT Emission Monitoring",
   "editor": "wokwi",
   "parts": [
     {
@@ -12,28 +12,89 @@
     },
     {
       "type": "wokwi-dht22",
-      "id": "dht1",
-      "top": -76.8,
-      "left": 201.6,
+      "id": "dht",
+      "top": -96,
+      "left": 240,
+      "attrs": {
+        "temperature": "22.5",
+        "humidity": "65"
+      }
+    },
+    {
+      "type": "wokwi-gas-sensor",
+      "id": "gas",
+      "top": 96,
+      "left": 240,
+      "attrs": {
+        "ppm": "400"
+      }
+    },
+    {
+      "type": "wokwi-microsd-card",
+      "id": "sd",
+      "top": 240,
+      "left": 240,
       "attrs": {}
     },
     {
       "type": "wokwi-resistor",
-      "id": "r1",
-      "top": -105.6,
-      "left": 105.6,
-      "rotate": 90,
-      "attrs": { "value": "10000" }
+      "id": "pullup",
+      "top": -115.2,
+      "left": 153.6,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_status",
+      "top": -172.8,
+      "left": -96,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "led_resistor",
+      "top": -153.6,
+      "left": -28.8,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "note",
+      "top": 345.6,
+      "left": -172.8,
+      "attrs": {
+        "text": "SIMULATOR ONLY: MQ-2 is an analog surrogate, not selective NH3.\nPhysical build: NH3-B1 + potentiostat, SCD41 I2C, MAX3485 RS-485.",
+        "font-size": "11",
+        "color": "#cc0000"
+      }
     }
   ],
   "connections": [
-    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
-    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
-    [ "dht1:VCC", "esp:3V3", "red", [] ],
-    [ "dht1:GND", "esp:GND.1", "black", [] ],
-    [ "dht1:SDA", "esp:D4", "green", [] ],
-    [ "r1:1", "esp:3V3", "", [] ],
-    [ "r1:2", "dht1:SDA", "", [] ]
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["dht:VCC", "esp:3V3", "red", []],
+    ["dht:GND", "esp:GND.1", "black", []],
+    ["dht:SDA", "esp:D4", "green", []],
+    ["pullup:1", "esp:3V3", "red", []],
+    ["pullup:2", "dht:SDA", "green", []],
+    ["gas:VCC", "esp:VIN", "red", []],
+    ["gas:GND", "esp:GND.1", "black", []],
+    ["gas:AO", "esp:D34", "blue", []],
+    ["sd:VCC", "esp:3V3", "red", []],
+    ["sd:GND", "esp:GND.1", "black", []],
+    ["sd:CS", "esp:D5", "orange", []],
+    ["sd:SCK", "esp:D18", "yellow", []],
+    ["sd:MISO", "esp:D19", "blue", []],
+    ["sd:MOSI", "esp:D23", "purple", []],
+    ["led_status:A", "led_resistor:1", "green", []],
+    ["led_resistor:2", "esp:D2", "green", []],
+    ["led_status:C", "esp:GND.1", "black", []]
   ],
   "dependencies": {}
 }

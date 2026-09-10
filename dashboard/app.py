@@ -225,21 +225,21 @@ def content() -> None:
             "**Virtual hardware demonstration and system architecture**"
         )
         
-        # Wokwi Simulation Embed
-        st.markdown("### 🖥️ Virtual Hardware Prototype")
+        # Wokwi simulation (open in browser — Wokwi does not support reliable iframe embed)
+        st.markdown("### 🖥️ Virtual Hardware Prototype (Wokwi)")
         st.info(
-            "Interactive ESP32 simulation with DHT22, analog gas sensor, and SD card. "
-            "Click 'Start Simulation' in the embedded viewer below."
+            "Open the Wokwi browser simulator with this repository's `wokwi/diagram.json` and `wokwi/sketch.ino`. "
+            "The circuit shows ESP32 + DHT22 + analog gas surrogate + microSD + status LED."
         )
-        
-        wokwi_url = "https://wokwi.com/projects/new/esp32"
         st.markdown(
-            f'<iframe src="{wokwi_url}" width="100%" height="500" frameborder="0"></iframe>',
-            unsafe_allow_html=True
+            "[**Open Wokwi ESP32 project**](https://wokwi.com/projects/new/esp32) · "
+            "[**Wokwi quick-start guide**](WOKWI_QUICK_START.md) · "
+            "[**Pin diagram (SVG)**](docs/figures/esp32_pin_connections.svg)"
         )
+        st.image(str(ROOT / "docs/figures/virtual_hardware_overview.svg"), width="stretch")
         st.caption(
-            "**Note:** Physical implementation requires NH₃-B1 electrochemical sensor with potentiostatic front-end, "
-            "I²C environmental sensor, and RS-485 Modbus interface."
+            "Repository-owned wiring diagram (checked against `firmware/include/Config.h`). "
+            "Physical implementation requires NH₃-B1 with potentiostatic front-end, I²C environmental sensor, and RS-485 Modbus."
         )
         
         # Hardware Details
