@@ -14,7 +14,7 @@
       "type": "wokwi-dht22",
       "id": "dht",
       "top": -96,
-      "left": 230.4,
+      "left": 240,
       "attrs": {
         "temperature": "22.5",
         "humidity": "65"
@@ -23,15 +23,15 @@
     {
       "type": "wokwi-microsd-card",
       "id": "sd",
-      "top": 268.8,
-      "left": 230.4,
+      "top": 240,
+      "left": 240,
       "attrs": {}
     },
     {
       "type": "wokwi-resistor",
       "id": "dht_pullup",
-      "top": -124.8,
-      "left": 134.4,
+      "top": -115.2,
+      "left": 153.6,
       "attrs": {
         "value": "10000"
       }
@@ -39,8 +39,8 @@
     {
       "type": "wokwi-led",
       "id": "led_status",
-      "top": -182.4,
-      "left": -105.6,
+      "top": -172.8,
+      "left": -96,
       "attrs": {
         "color": "green"
       }
@@ -49,93 +49,17 @@
       "type": "wokwi-resistor",
       "id": "led_resistor",
       "top": -153.6,
-      "left": -38.4,
+      "left": -28.8,
       "attrs": {
         "value": "220"
       }
     },
     {
-      "type": "wokwi-potentiometer",
-      "id": "gas_analog",
-      "top": 86.4,
-      "left": 249.6,
-      "attrs": {
-        "value": "400"
-      }
-    },
-    {
-      "type": "board-ssd1306",
-      "id": "oled",
-      "top": -230.71,
-      "left": 374.09,
+      "type": "wokwi-analog-joystick",
+      "id": "joystick",
+      "top": 96,
+      "left": 288,
       "attrs": {}
-    },
-    {
-      "type": "wokwi-text",
-      "id": "title",
-      "top": -268.8,
-      "left": -172.8,
-      "attrs": {
-        "text": "Agricultural Emission Monitoring System\nVirtual Hardware Prototype",
-        "font-size": "14",
-        "font-weight": "bold",
-        "color": "#0066cc"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "dht_label",
-      "top": -134.4,
-      "left": 326.4,
-      "attrs": {
-        "text": "DHT22\nTemp/Humidity\nDigital (GPIO4)",
-        "font-size": "11",
-        "color": "#333333"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "sd_label",
-      "top": 268.8,
-      "left": 345.6,
-      "attrs": {
-        "text": "microSD Card\nLocal Logging\nSPI (CS:5, SCK:18)",
-        "font-size": "11",
-        "color": "#333333"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "gas_label",
-      "top": 105.6,
-      "left": 374.4,
-      "attrs": {
-        "text": "Gas Sensor (Analog)\nADC1_CH6 (GPIO34)\nSimulated NH3 signal",
-        "font-size": "11",
-        "color": "#cc6600"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "status_label",
-      "top": -211.2,
-      "left": -172.8,
-      "attrs": {
-        "text": "Status LED\nGreen: System OK",
-        "font-size": "11",
-        "color": "#009900"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "note",
-      "top": 345.6,
-      "left": -172.8,
-      "attrs": {
-        "text": "NOTE: This is a virtual hardware demonstration.\nPhysical implementation requires:\n• Electrochemical NH3-B1 sensor with potentiostatic front-end\n• I2C environmental sensor (e.g., SCD41)\n• RS-485 transceiver (MAX3485) for Modbus\n• Proper power supply with protection circuits",
-        "font-size": "10",
-        "color": "#cc0000"
-      }
     }
   ],
   "connections": [
@@ -206,33 +130,33 @@
       []
     ],
     [
-      "sd:DO",
+      "sd:MISO",
       "esp:D19",
       "blue",
       []
     ],
     [
-      "sd:DI",
+      "sd:MOSI",
       "esp:D23",
       "purple",
       []
     ],
     [
-      "gas_analog:SIG",
-      "esp:D34",
-      "blue",
-      []
-    ],
-    [
-      "gas_analog:VCC",
+      "joystick:VCC",
       "esp:3V3",
       "red",
       []
     ],
     [
-      "gas_analog:GND",
+      "joystick:GND",
       "esp:GND.2",
       "black",
+      []
+    ],
+    [
+      "joystick:VERT",
+      "esp:D34",
+      "blue",
       []
     ],
     [
@@ -251,30 +175,6 @@
       "led_status:C",
       "esp:GND.1",
       "black",
-      []
-    ],
-    [
-      "oled:GND",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "oled:VCC",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
-      "oled:SCL",
-      "esp:D22",
-      "yellow",
-      []
-    ],
-    [
-      "oled:SDA",
-      "esp:D21",
-      "blue",
       []
     ]
   ],
