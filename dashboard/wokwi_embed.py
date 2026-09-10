@@ -1,5 +1,6 @@
 """Embed the repository Wokwi project inside Streamlit via the experimental API."""
 
+import base64
 import json
 from pathlib import Path
 
@@ -8,21 +9,54 @@ import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parents[1]
 WOKWI_DIR = ROOT / "wokwi"
+BUILD_DIR = ROOT / "firmware" / ".pio" / "build" / "esp32dev"
 EMBED_CLIENT_ID = "wokwi_client_agri_emissions_demo"
 EMBED_HEIGHT = 720
 
 
-def _load_project_files() -> tuple[str, str]:
+def _firmware_paths() -> tuple[Path, Path]:
+    bin_path = WOKWI_DIR / "firmware.bin"
+    elf_path = WOKWI_DIR / "firmware.elf"
+    if bin_path.exists() and elf_path.exists():
+        return bin_path, elf_path
+    return BUILD_DIR / "firmware.bin", BUILD_DIR / "firmware.elf"
+
+
+def _load_project_payload() -> dict[str, str] | None:
     diagram = (WOKWI_DIR / "diagram.json").read_text(encoding="utf-8")
-    sketch = (WOKWI_DIR / "sketch.ino").read_text(encoding="utf-8")
-    return diagram, sketch
+    bin_path, elf_path = _firmware_paths()
+    if not bin_path.exists() or not elf_path.exists():
+        return None
+    return {
+        "diagram": diagram,
+        "firmware_b64": base64.b64encode(bin_path.read_bytes()).decode("ascii"),
+        "elf_b64": base64.b64encode(elf_path.read_bytes()).decode("ascii"),
+        "firmware_size_kb": f"{bin_path.stat().st_size / 1024:.0f}",
+    }
 
 
 def render_wokwi_simulation() -> None:
     """Render an interactive Wokwi simulation loaded from this repository."""
-    diagram, sketch = _load_project_files()
-    diagram_json = json.dumps(diagram)
-    sketch_json = json.dumps(sketch)
+    payload = _load_project_payload()
+    if payload is None:
+        st.warning(
+            "Compiled firmware not found. Build and copy binaries, then refresh this page:\n\n"
+            "```\npython -m platformio run -d firmware -e esp32dev\n"
+            "python tools/prepare_wokwi_firmware.py\n```"
+        )
+        st.code(
+            "1. https://wokwi.com/projects/new/esp32\n"
+            "2. Paste wokwi/diagram.json\n"
+            "3. Paste wokwi/sketch.ino (Wokwi compiles source in the editor)\n"
+            "4. Click Start Simulation",
+            language="text",
+        )
+        return
+
+    diagram_json = json.dumps(payload["diagram"])
+    firmware_b64 = json.dumps(payload["firmware_b64"])
+    elf_b64 = json.dumps(payload["elf_b64"])
+    size_kb = payload["firmware_size_kb"]
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -43,6 +77,7 @@ def render_wokwi_simulation() -> None:
       padding: 10px 12px;
       background: #ffffff;
       border-bottom: 1px solid #dde5e9;
+      flex-wrap: wrap;
     }}
     button {{
       background: #127f80;
@@ -131,7 +166,8 @@ def render_wokwi_simulation() -> None:
   </div>
   <script type="module">
     const diagram = {diagram_json};
-    const sketch = {sketch_json};
+    const firmwareB64 = {firmware_b64};
+    const elfB64 = {elf_b64};
     const statusEl = document.getElementById("status");
     const outputEl = document.getElementById("serial-output");
     const startBtn = document.getElementById("start-btn");
@@ -160,8 +196,11 @@ def render_wokwi_simulation() -> None:
         this.pendingCommands = new Map();
         transport.onMessage = (message) => this.processMessage(message);
       }}
-      async fileUpload(name, content) {{
+      async fileUploadText(name, content) {{
         return this.sendCommand("file:upload", {{ name, text: content }});
+      }}
+      async fileUploadBinary(name, binaryB64) {{
+        return this.sendCommand("file:upload", {{ name, binary: binaryB64 }});
       }}
       async simStart(params) {{
         return this.sendCommand("sim:start", params);
@@ -204,10 +243,11 @@ def render_wokwi_simulation() -> None:
     }}
 
     async function uploadProject() {{
-      statusEl.textContent = "Uploading diagram and firmware from repository…";
+      statusEl.textContent = "Uploading diagram and compiled firmware ({size_kb} KB)…";
       await client.serialMonitorListen();
-      await client.fileUpload("diagram.json", diagram);
-      await client.fileUpload("sketch.ino", sketch);
+      await client.fileUploadText("diagram.json", diagram);
+      await client.fileUploadBinary("firmware.bin", firmwareB64);
+      await client.fileUploadBinary("firmware.elf", elfB64);
       statusEl.textContent = "Project loaded. Click Start simulation.";
       startBtn.disabled = false;
       restartBtn.disabled = false;
@@ -216,7 +256,7 @@ def render_wokwi_simulation() -> None:
     async function startSimulation() {{
       outputEl.textContent = "";
       statusEl.textContent = "Starting simulation…";
-      await client.simStart({{ firmware: "sketch.ino", elf: "sketch.ino" }});
+      await client.simStart({{ firmware: "firmware.bin", elf: "firmware.elf" }});
       statusEl.textContent = "Simulation running";
     }}
 
@@ -259,18 +299,14 @@ def render_wokwi_simulation() -> None:
 
     components.html(html, height=EMBED_HEIGHT, scrolling=False)
 
-    with st.expander("Open in Wokwi editor", expanded=False):
+    with st.expander("Open in Wokwi editor (source sketch)", expanded=False):
         st.markdown(
-            "If the embedded simulator does not load, open the same project files directly in Wokwi:"
+            "The embedded simulator uses **compiled PlatformIO firmware** (`firmware.bin`). "
+            "For editing source in Wokwi directly, use `wokwi/sketch.ino`."
         )
         st.code(
-            "1. https://wokwi.com/projects/new/esp32\n"
-            "2. Paste wokwi/diagram.json into the diagram editor\n"
-            "3. Paste wokwi/sketch.ino into the code editor\n"
-            "4. Click Start Simulation",
-            language="text",
-        )
-        st.caption(
-            "The embedded view loads diagram.json and sketch.ino from this repository automatically. "
-            "MQ-2 is a simulator-only analog surrogate, not a selective NH₃ sensor."
+            "python -m platformio run -d firmware -e esp32dev\n"
+            "python tools/prepare_wokwi_firmware.py\n"
+            "streamlit run dashboard/app.py",
+            language="bash",
         )

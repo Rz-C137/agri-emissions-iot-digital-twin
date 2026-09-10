@@ -24,3 +24,4 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install 'platformio>=6.1,<7'
       - run: python -m platformio run -d firmware -e esp32dev -e esp32dev_rs485
+      - run: python tools/prepare_wokwi_firmware.py
