@@ -3,11 +3,13 @@ from pathlib import Path
 from streamlit.testing.v1 import AppTest
 
 
-def test_dashboard_all_pages_and_independent_controls():
+def test_dashboard_three_pages_and_independent_controls():
     app = AppTest.from_file(str(Path(__file__).parents[1] / "dashboard/app.py"))
     app.run(timeout=60)
     assert not app.exception
-    app.sidebar.radio[0].set_value("Fault Injection").run()
+
+    app.sidebar.radio[0].set_value("🏠 Overview & Live System").run(timeout=60)
+    assert not app.exception
 
     def click(label):
         next(w for w in app.button if w.label == label).click().run()
@@ -26,16 +28,11 @@ def test_dashboard_all_pages_and_independent_controls():
     assert twin.storage == "OK" and twin.sensor_mode == "SENSOR_DISCONNECTED"
     twin = click("Restore sensor")
     assert twin.sensor_mode == "NORMAL" and twin.environment_mode == "HIGH_NH3"
+
     for page in [
-        "Overview",
-        "Live Monitoring",
-        "System Architecture",
-        "Virtual Hardware",
-        "Commissioning Bench",
-        "Data Quality",
-        "Calibration & Validation",
-        "Event Log",
-        "Technical Details",
+        "🏠 Overview & Live System",
+        "🔧 Hardware & Architecture",
+        "📊 Validation & Technical Details",
     ]:
         app.sidebar.radio[0].set_value(page).run(timeout=60)
         assert not app.exception, page

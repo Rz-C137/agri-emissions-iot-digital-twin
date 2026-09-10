@@ -24,6 +24,8 @@ def _canonical_pin(pin: str) -> str:
     part, signal = pin.split(":", 1)
     if part.startswith("dht"):
         part = "dht"
+    elif part == "dht1":
+        part = "dht"
     elif part in {"pullup", "r1", "dht_pullup"}:
         part = "pullup"
     elif part in {"joystick", "potentiometer", "gas_analog"} and signal in {"VERT", "SIG", "AO"}:

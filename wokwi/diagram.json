@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "author": "Agricultural IoT Emission Monitoring",
+  "author": "R. Abdollahipour - Agricultural IoT Emission Monitoring",
   "editor": "wokwi",
   "parts": [
     {
@@ -18,15 +18,6 @@
       "attrs": {
         "temperature": "22.5",
         "humidity": "65"
-      }
-    },
-    {
-      "type": "wokwi-gas-sensor",
-      "id": "gas",
-      "top": 96,
-      "left": 240,
-      "attrs": {
-        "ppm": "400"
       }
     },
     {
@@ -64,14 +55,23 @@
       }
     },
     {
+      "type": "wokwi-gas-sensor",
+      "id": "gas",
+      "top": 96,
+      "left": 240,
+      "attrs": {
+        "ppm": "400"
+      }
+    },
+    {
       "type": "wokwi-text",
       "id": "note",
-      "top": 345.6,
+      "top": 336,
       "left": -172.8,
       "attrs": {
-        "text": "SIMULATOR ONLY: MQ-2 is an analog surrogate, not selective NH3.\nPhysical build: NH3-B1 + potentiostat, SCD41 I2C, MAX3485 RS-485.",
+        "text": "Virtual demonstrator: MQ-2 is NOT selective NH3.\nPhysical build needs NH3-B1 + potentiostat + RS-485.",
         "font-size": "11",
-        "color": "#cc0000"
+        "color": "#993300"
       }
     }
   ],
@@ -83,15 +83,15 @@
     ["dht:SDA", "esp:D4", "green", []],
     ["pullup:1", "esp:3V3", "red", []],
     ["pullup:2", "dht:SDA", "green", []],
-    ["gas:VCC", "esp:VIN", "red", []],
-    ["gas:GND", "esp:GND.1", "black", []],
-    ["gas:AO", "esp:D34", "blue", []],
     ["sd:VCC", "esp:3V3", "red", []],
     ["sd:GND", "esp:GND.1", "black", []],
     ["sd:CS", "esp:D5", "orange", []],
     ["sd:SCK", "esp:D18", "yellow", []],
-    ["sd:MISO", "esp:D19", "blue", []],
-    ["sd:MOSI", "esp:D23", "purple", []],
+    ["sd:DO", "esp:D19", "blue", []],
+    ["sd:DI", "esp:D23", "purple", []],
+    ["gas:VCC", "esp:VIN", "red", []],
+    ["gas:GND", "esp:GND.1", "black", []],
+    ["gas:AO", "esp:D34", "blue", []],
     ["led_status:A", "led_resistor:1", "green", []],
     ["led_resistor:2", "esp:D2", "green", []],
     ["led_status:C", "esp:GND.1", "black", []]

@@ -1,51 +1,108 @@
-#include "DHTesp.h"
+/*
+ * Agricultural IoT Emission Monitoring — Wokwi virtual hardware demo
+ *
+ * Hardware (see diagram.json):
+ *   DHT22 DATA  -> GPIO4  (10 kΩ pull-up)
+ *   Gas AO      -> GPIO34 (ADC1, simulator-only MQ-2 surrogate)
+ *   microSD SPI -> CS=5, SCK=18, MISO=19, MOSI=23
+ *   Status LED  -> GPIO2
+ */
 
-DHTesp dht;
+#include <DHT.h>
+#include <SD.h>
+#include <SPI.h>
+
+#define DHT_PIN 4
+#define DHT_TYPE DHT22
+#define GAS_PIN 34
+#define SD_CS_PIN 5
+#define LED_PIN 2
+#define SAMPLE_MS 5000
+
+DHT dht(DHT_PIN, DHT_TYPE);
+
+unsigned long lastSample = 0;
+uint32_t sequence = 0;
+bool sdReady = false;
 
 void setup() {
   Serial.begin(115200);
+  delay(500);
   Serial.println();
-  Serial.println("=== Agricultural IoT Monitoring System ===");
-  Serial.println("Virtual Hardware Demo for ATB Interview");
-  Serial.println("==========================================");
-  
-  dht.setup(4, DHTesp::DHT22);
-  
-  Serial.println("\n[OK] System initialized");
-  Serial.println("\nSampling every 5 seconds...\n");
-  Serial.println("Time,Sequence,Temp(C),Humidity(%),Status");
-  Serial.println("------------------------------------------");
+  Serial.println("=== Agricultural Emission Monitoring System ===");
+  Serial.println("Wokwi virtual hardware demonstrator");
+  Serial.println("MQ-2 is an analog surrogate only — not selective NH3");
+  Serial.println("==============================================");
+
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  dht.begin();
+  analogReadResolution(12);
+  Serial.println("[OK] DHT22 initialized");
+
+  if (SD.begin(SD_CS_PIN)) {
+    sdReady = true;
+    Serial.println("[OK] SD card initialized");
+    File dataFile = SD.open("/data.csv", FILE_WRITE);
+    if (dataFile) {
+      dataFile.println("timestamp_s,sequence,temp_c,humidity_pct,gas_raw,gas_voltage_v,status");
+      dataFile.close();
+      Serial.println("[OK] /data.csv created");
+    }
+  } else {
+    Serial.println("[ERROR] SD card initialization failed");
+  }
+
+  Serial.println();
+  Serial.println("timestamp_s,sequence,temp_c,humidity_pct,gas_raw,gas_voltage_v,status");
+  Serial.println("----------------------------------------------------------------");
 }
 
-int sequence = 0;
-
 void loop() {
-  delay(5000);
-  
-  float temp = dht.getTemperature();
-  float humidity = dht.getHumidity();
-  
-  char buffer[100];
-  unsigned long seconds = millis() / 1000;
-  
-  if (dht.getStatus() == 0) {
-    sprintf(buffer, "%02lu:%02lu:%02lu,%d,%.1f,%.1f,OK", 
-            seconds/3600, (seconds/60)%60, seconds%60,
-            sequence, temp, humidity);
-  } else {
-    sprintf(buffer, "%02lu:%02lu:%02lu,%d,ERROR,ERROR,SENSOR_FAIL",
-            seconds/3600, (seconds/60)%60, seconds%60, sequence);
+  const unsigned long now = millis();
+  if (now - lastSample < SAMPLE_MS) {
+    delay(10);
+    return;
   }
-  
-  Serial.println(buffer);
-  
+  lastSample = now;
+
+  const float temperature = dht.readTemperature();
+  const float humidity = dht.readHumidity();
+  const int gasRaw = analogRead(GAS_PIN);
+  const float gasVoltage = gasRaw * (3.3f / 4095.0f);
+  const bool sensorOk = !isnan(temperature) && !isnan(humidity);
+
+  digitalWrite(LED_PIN, sensorOk && sdReady ? HIGH : LOW);
+
+  const unsigned long seconds = now / 1000;
+  char line[160];
+  if (sensorOk) {
+    snprintf(line, sizeof(line), "%lu,%lu,%.1f,%.1f,%d,%.3f,%s",
+             seconds, sequence, temperature, humidity, gasRaw, gasVoltage,
+             sdReady ? "OK" : "SD_ERR");
+  } else {
+    snprintf(line, sizeof(line), "%lu,%lu,ERROR,ERROR,%d,%.3f,%s",
+             seconds, sequence, gasRaw, gasVoltage, sdReady ? "OK" : "SD_ERR");
+  }
+  Serial.println(line);
+
+  if (sdReady) {
+    File dataFile = SD.open("/data.csv", FILE_APPEND);
+    if (dataFile) {
+      dataFile.println(line);
+      dataFile.close();
+    } else {
+      sdReady = false;
+      Serial.println("[ERROR] SD write failed");
+    }
+  }
+
   sequence++;
-  
   if (sequence % 10 == 0) {
-    Serial.println("------------------------------------------");
-    Serial.print("[INFO] ");
-    Serial.print(sequence);
-    Serial.println(" samples acquired");
-    Serial.println("------------------------------------------");
+    Serial.println("----------------------------------------------------------------");
+    Serial.printf("[INFO] %lu samples | sensor=%s | storage=%s\n",
+                  sequence, sensorOk ? "OK" : "ERROR", sdReady ? "OK" : "ERROR");
+    Serial.println("----------------------------------------------------------------");
   }
 }
