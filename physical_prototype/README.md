@@ -35,11 +35,12 @@ NH₃/CH₄/N₂O remain **design-stage or virtual** until research-grade sensor
 
 1. **No fabricated photos or CSV rows.** If a test was not run, leave the file empty or mark `TBD`.
 2. **Date every entry** in commissioning and troubleshooting logs.
-3. **Link evidence** from `docs/bench_commissioning_report.md` once measurements exist.
+3. **Link evidence** from `docs/07_commissioning.md` once measurements exist.
 
 ## Related documentation
 
-- [Sensor procurement workflow](../docs/sensor_procurement.md)
-- [Bench commissioning report template](../docs/bench_commissioning_report.md)
-- [Hardware and driver commissioning](../docs/hardware_commissioning.md)
-- [Implementation limitations](../docs/limitations.md)
+- [Sensor selection and procurement](../docs/03_sensor_selection.md)
+- [Commissioning workflow](../docs/07_commissioning.md)
+- [Driver configuration](../docs/06_driver_configuration.md)
+- [Physical bench plan](../docs/09_physical_bench_plan.md)
+- [Limitations](../docs/12_limitations.md)

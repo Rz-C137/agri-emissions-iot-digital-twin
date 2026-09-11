@@ -206,10 +206,10 @@ def demonstrator_page(root: Path, twin, running: bool) -> None:
 
     st.markdown("#### Repository map")
     st.markdown(
-        "[Farm context](../docs/farm_context.md) · "
-        "[Sensor procurement](../docs/sensor_procurement.md) · "
-        "[Driver configuration](../docs/driver_configuration.md) · "
-        "[PCB concept](../docs/pcb_design.md) · "
-        "[Commissioning report](../docs/bench_commissioning_report.md) · "
-        "[Ecosystem overview](../docs/ecosystem_overview.md)"
+        "[Farm context](../docs/02_farm_context.md) · "
+        "[Sensor selection](../docs/03_sensor_selection.md) · "
+        "[Driver configuration](../docs/06_driver_configuration.md) · "
+        "[Physical bench plan](../docs/09_physical_bench_plan.md) · "
+        "[Commissioning](../docs/07_commissioning.md) · "
+        "[System architecture](../docs/04_system_architecture.md)"
     )
