@@ -1,6 +1,6 @@
-# As-Built Pin Assignment (Bench Prototype)
+# As-Built Pin Assignment (Future Bench Record)
 
-**Status:** Template — update after physical assembly.
+**Status:** To be completed during physical bench commissioning. This is an evidence record, not a second design source. The planned design contract is [docs/05_wiring_and_interfaces.md](../../docs/05_wiring_and_interfaces.md); firmware defaults remain in `firmware/include/Config.h`.
 
 | Signal | ESP32 pin | Connected to | Notes |
 |--------|-----------|--------------|-------|
