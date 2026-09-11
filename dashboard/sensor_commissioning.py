@@ -26,8 +26,11 @@ def sensor_commissioning_page(twin) -> None:
 
     col_a, col_b = st.columns(2)
     with col_a:
-        fault = st.selectbox("Temperature fault injection", TEMP_FAULT_MODES, key="temp_fault_mode")
-        if fault != twin.temp_fault_mode:
+        fault = st.selectbox(
+            "Temperature fault injection", TEMP_FAULT_MODES, key="ui_temp_fault_mode"
+        )
+        current_fault = getattr(twin, "temp_fault_mode", "NONE")
+        if fault != current_fault and hasattr(twin, "set_temp_fault"):
             twin.set_temp_fault(fault)
     with col_b:
         threshold = st.number_input(

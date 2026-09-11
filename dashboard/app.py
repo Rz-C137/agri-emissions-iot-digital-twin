@@ -13,6 +13,7 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from dashboard.commissioning import commissioning_page  # noqa: E402
+from dashboard.demonstrator import demonstrator_page  # noqa: E402
 from dashboard.hardware import glance, hardware_page  # noqa: E402
 from dashboard.sensor_commissioning import sensor_commissioning_page  # noqa: E402
 from dashboard.wokwi_embed import render_wokwi_simulation  # noqa: E402
@@ -32,10 +33,21 @@ h1,h2,h3 {color:#173f43} .block-container {padding-top:4rem}
     unsafe_allow_html=True,
 )
 
-if "twin" not in st.session_state:
-    st.session_state.twin = Twin(log_path=ROOT / "data/runs" / f"{uuid4().hex}.csv")
-    st.session_state.twin.step(120)
-twin = st.session_state.twin
+def _new_twin(interval_s: int = 60) -> Twin:
+    twin = Twin(Config(interval_s=interval_s), ROOT / "data/runs" / f"{uuid4().hex}.csv")
+    twin.step(120)
+    return twin
+
+
+def get_twin(interval_s: int = 60) -> Twin:
+    """Return session twin, recreating if an older build left a stale instance."""
+    twin = st.session_state.get("twin")
+    if twin is None or not callable(getattr(twin, "set_temp_fault", None)):
+        st.session_state.twin = _new_twin(interval_s)
+    return st.session_state.twin
+
+
+twin = get_twin()
 
 with st.sidebar:
     st.markdown("### AGRI EMISSIONS\nVirtual Commissioning Prototype")
@@ -44,6 +56,7 @@ with st.sidebar:
         "Navigation",
         [
             "🏠 Overview & Live System",
+            "🧭 Bench-to-Barn Demonstrator",
             "🌡️ Sensor Commissioning",
             "🔧 Hardware & Architecture",
             "📊 Validation & Technical Details",
@@ -55,10 +68,7 @@ with st.sidebar:
         twin.step(10)
     interval = st.selectbox("Sampling interval (seconds)", [60, 10, 300])
     if st.button("Reset deterministic session", width="stretch"):
-        st.session_state.twin = Twin(
-            Config(interval_s=interval), ROOT / "data/runs" / f"{uuid4().hex}.csv"
-        )
-        st.session_state.twin.step(120)
+        st.session_state.twin = _new_twin(interval)
         st.rerun()
     st.caption("Run advances one simulated sample per second. Sampling interval applies on reset.")
 
@@ -92,6 +102,7 @@ def validation_data() -> tuple[pd.DataFrame, dict]:
 
 @st.fragment(run_every=1 if running else None)
 def content() -> None:
+    twin = get_twin(interval)
     if running:
         twin.step()
     frame = pd.DataFrame(twin.records)
@@ -103,7 +114,10 @@ def content() -> None:
     page_title = page.split(" ", 1)[1] if " " in page else page
     st.title(page_title)
 
-    if page == "🏠 Overview & Live System":
+    if page == "🧭 Bench-to-Barn Demonstrator":
+        demonstrator_page(ROOT)
+
+    elif page == "🏠 Overview & Live System":
         st.markdown(
             "**Virtual commissioning prototype demonstrating firmware architecture, fault handling, and data quality assurance**"
         )
