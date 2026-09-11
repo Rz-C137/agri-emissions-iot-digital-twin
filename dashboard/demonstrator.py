@@ -8,9 +8,24 @@ STAGES = [
     ("1", "Farm context", "LVAT-like livestock building and service-area deployment", "Documented"),
     ("2", "Sensor selection", "DHT22 / DS18B20 / BMP180 / SCD41 decision path", "Documented"),
     ("3", "Exact integration", "ESP32 pin map, firmware interfaces and local build", "Implemented"),
-    ("4", "Assembly", "Breadboard first, KiCad carrier board as the production path", "Design stage"),
-    ("5", "Drivers", "PlatformIO libraries, USB-UART setup, serial and flash workflow", "Documented"),
-    ("6", "Commissioning", "Voltage checks, acquisition, faults, Modbus and QA/QC", "Template ready"),
+    (
+        "4",
+        "Assembly",
+        "Breadboard first, KiCad carrier board as the production path",
+        "Design stage",
+    ),
+    (
+        "5",
+        "Drivers",
+        "PlatformIO libraries, USB-UART setup, serial and flash workflow",
+        "Documented",
+    ),
+    (
+        "6",
+        "Commissioning",
+        "Voltage checks, acquisition, faults, Modbus and QA/QC",
+        "Template ready",
+    ),
     ("7", "Barn ecosystem", "Local log, RS-485 reference path, MQTT and dashboard", "Implemented"),
 ]
 
@@ -30,7 +45,11 @@ REQUIREMENTS = [
     ("Interfaces", "Digital, 1-Wire, I2C, SPI, UART/RS-485, WiFi/MQTT", "Implemented / design"),
     ("Data logging", "microSD CSV role + Python local run log", "Implemented"),
     ("Fault detection", "Sensor, network, storage and QA/QC injection", "Implemented"),
-    ("Calibration and validation", "Chronological holdout + reference workflow", "Implemented / synthetic"),
+    (
+        "Calibration and validation",
+        "Chronological holdout + reference workflow",
+        "Implemented / synthetic",
+    ),
     ("Wiring and soldering", "Pin map now; physical evidence required", "Pending evidence"),
     ("Farm commissioning", "Protocol and report templates", "Template ready"),
 ]
@@ -39,7 +58,12 @@ REQUIREMENTS = [
 def _status_color(status: str) -> str:
     if status in {"Implemented", "Documented"}:
         return "#147d72"
-    if status in {"Design stage", "Template ready", "Implemented / design", "Implemented / synthetic"}:
+    if status in {
+        "Design stage",
+        "Template ready",
+        "Implemented / design",
+        "Implemented / synthetic",
+    }:
         return "#ad6b00"
     return "#8a3d3d"
 
@@ -104,21 +128,39 @@ def demonstrator_page(root: Path, twin, running: bool) -> None:
     live_cols[2].metric("Temperature", f"{live_last['temperature_c']:.1f} °C")
     live_cols[3].metric("Humidity", f"{live_last['relative_humidity_pct']:.1f} %")
     live_cols[4].metric("NH3", f"{live_last['nh3_raw_ppm']:.1f} ppm")
-    st.caption("This is the local Python twin. It is live and fault-injectable; it is not a physical ESP32 stream.")
+    st.caption(
+        "This is the local Python twin. It is live and fault-injectable; it is not a physical ESP32 stream."
+    )
     live_frame = twin.records[-60:]
     st.line_chart(
-        {"Temperature °C": [row["temperature_c"] for row in live_frame],
-         "Humidity %": [row["relative_humidity_pct"] for row in live_frame]},
+        {
+            "Temperature °C": [row["temperature_c"] for row in live_frame],
+            "Humidity %": [row["relative_humidity_pct"] for row in live_frame],
+        },
         height=220,
     )
 
     st.markdown("#### Sensors and interfaces")
     sensor_html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px">'
-    sensor_html += _sensor_card("DHT22", "Environmental sensor", "Digital · GPIO4", "Temperature + RH", "Wokwi + firmware")
-    sensor_html += _sensor_card("DS18B20", "Redundant temperature", "1-Wire · GPIO15", "Independent temperature check", "Wokwi + firmware")
-    sensor_html += _sensor_card("BMP180", "Pressure sensor", "I2C · GPIO21/22", "Pressure + temperature", "Wokwi + firmware")
-    sensor_html += _sensor_card("SCD41", "Bench extension", "I2C", "CO2 + temperature + RH comparison", "Bench target")
-    sensor_html += _sensor_card("MQ-2", "Gas surrogate", "ADC · GPIO34", "Analog acquisition path only", "Simulation only")
+    sensor_html += _sensor_card(
+        "DHT22", "Environmental sensor", "Digital · GPIO4", "Temperature + RH", "Wokwi + firmware"
+    )
+    sensor_html += _sensor_card(
+        "DS18B20",
+        "Redundant temperature",
+        "1-Wire · GPIO15",
+        "Independent temperature check",
+        "Wokwi + firmware",
+    )
+    sensor_html += _sensor_card(
+        "BMP180", "Pressure sensor", "I2C · GPIO21/22", "Pressure + temperature", "Wokwi + firmware"
+    )
+    sensor_html += _sensor_card(
+        "SCD41", "Bench extension", "I2C", "CO2 + temperature + RH comparison", "Bench target"
+    )
+    sensor_html += _sensor_card(
+        "MQ-2", "Gas surrogate", "ADC · GPIO34", "Analog acquisition path only", "Simulation only"
+    )
     st.markdown(sensor_html + "</div>", unsafe_allow_html=True)
 
     visual_tab, wiring_tab, pcb_tab, ecosystem_tab = st.tabs(
@@ -126,23 +168,34 @@ def demonstrator_page(root: Path, twin, running: bool) -> None:
     )
     with visual_tab:
         st.image(str(root / "docs/figures/virtual_hardware_overview.svg"), width="stretch")
-        st.caption("Virtual node layout from the repository Wokwi diagram. It is an integration visual, not electrical validation.")
+        st.caption(
+            "Virtual node layout from the repository Wokwi diagram. It is an integration visual, not electrical validation."
+        )
         st.image(str(root / "docs/figures/prototype_components.svg"), width="stretch")
     with wiring_tab:
         st.image(str(root / "docs/figures/esp32_pin_connections.svg"), width="stretch")
         st.markdown("##### Pin-level contract")
         st.dataframe(
-            [{"Component": c, "ESP32 pins": p, "Interface": i, "Role": r} for c, p, i, r in PIN_ROWS],
+            [
+                {"Component": c, "ESP32 pins": p, "Interface": i, "Role": r}
+                for c, p, i, r in PIN_ROWS
+            ],
             hide_index=True,
             width="stretch",
         )
     with pcb_tab:
         st.markdown(_pcb_concept(), unsafe_allow_html=True)
-        st.caption("Conceptual carrier board only. No fabricated PCB or physical solder evidence is claimed.")
-        st.markdown("**Manual solder points:** ESP32 headers, screw terminals, DS18B20 pull-up, status LED, microSD header and RS-485 module pads.")
+        st.caption(
+            "Conceptual carrier board only. No fabricated PCB or physical solder evidence is claimed."
+        )
+        st.markdown(
+            "**Manual solder points:** ESP32 headers, screw terminals, DS18B20 pull-up, status LED, microSD header and RS-485 module pads."
+        )
     with ecosystem_tab:
         st.markdown(_system_diagram(), unsafe_allow_html=True)
-        st.caption("Barn deployment concept: local logging and QA/QC remain available when network transport is unavailable.")
+        st.caption(
+            "Barn deployment concept: local logging and QA/QC remain available when network transport is unavailable."
+        )
 
     st.markdown("#### Demonstrator stages")
     stage_html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">'
@@ -174,7 +227,10 @@ def demonstrator_page(root: Path, twin, running: bool) -> None:
     with left:
         st.markdown("#### Exact integration contract")
         st.dataframe(
-            [{"Component": c, "ESP32 pins": p, "Interface": i, "Role": r} for c, p, i, r in PIN_ROWS],
+            [
+                {"Component": c, "ESP32 pins": p, "Interface": i, "Role": r}
+                for c, p, i, r in PIN_ROWS
+            ],
             hide_index=True,
             width="stretch",
         )

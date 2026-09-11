@@ -63,7 +63,9 @@ def assess_temperature_agreement(
     suspected = "NONE"
     if len(valid) == 3:
         ref = _median3(
-            temperature_dht22_c, temperature_ds18b20_c, temperature_bmp180_c  # type: ignore[arg-type]
+            temperature_dht22_c,
+            temperature_ds18b20_c,
+            temperature_bmp180_c,  # type: ignore[arg-type]
         )
         suspected = max(
             valid,
@@ -72,7 +74,9 @@ def assess_temperature_agreement(
     elif len(valid) == 2:
         names = list(valid)
         mid = sum(valid.values()) / 2.0
-        suspected = names[0] if abs(valid[names[0]] - mid) >= abs(valid[names[1]] - mid) else names[1]
+        suspected = (
+            names[0] if abs(valid[names[0]] - mid) >= abs(valid[names[1]] - mid) else names[1]
+        )
 
     return {
         "readings": readings,

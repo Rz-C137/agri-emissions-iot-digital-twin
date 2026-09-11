@@ -147,12 +147,18 @@ class Twin:
             index = len(self.records)
             values = self.environment.sample(index, self.environment_mode == "HIGH_NH3")
             if self.temp_fault_mode == "DHT_BIAS":
-                values["temperature_dht22_c"] = values.get("temperature_dht22_c", 0) + self.temp_fault_offset_c
+                values["temperature_dht22_c"] = (
+                    values.get("temperature_dht22_c", 0) + self.temp_fault_offset_c
+                )
                 values["temperature_c"] = values["temperature_dht22_c"]
             elif self.temp_fault_mode == "DS18_BIAS":
-                values["temperature_ds18b20_c"] = values.get("temperature_ds18b20_c", 0) + self.temp_fault_offset_c
+                values["temperature_ds18b20_c"] = (
+                    values.get("temperature_ds18b20_c", 0) + self.temp_fault_offset_c
+                )
             elif self.temp_fault_mode == "BMP_BIAS":
-                values["temperature_bmp180_c"] = values.get("temperature_bmp180_c", 0) + self.temp_fault_offset_c
+                values["temperature_bmp180_c"] = (
+                    values.get("temperature_bmp180_c", 0) + self.temp_fault_offset_c
+                )
             temp_qc = assess_temperature_agreement(
                 values.get("temperature_dht22_c"),
                 values.get("temperature_ds18b20_c"),

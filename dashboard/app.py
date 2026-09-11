@@ -33,6 +33,7 @@ h1,h2,h3 {color:#173f43} .block-container {padding-top:4rem}
     unsafe_allow_html=True,
 )
 
+
 def _new_twin(interval_s: int = 60) -> Twin:
     twin = Twin(Config(interval_s=interval_s), ROOT / "data/runs" / f"{uuid4().hex}.csv")
     twin.step(120)
@@ -120,7 +121,7 @@ def content() -> None:
         st.info(
             "⚠️ **Virtual system with simulated sensors.** Physical integration, lab calibration, and field deployment are future stages."
         )
-        
+
         # Fault Injection Controls
         with st.expander("🔧 Fault Injection & System Controls", expanded=False):
             st.caption("Inject faults independently to test system resilience")
@@ -163,7 +164,7 @@ def content() -> None:
                 twin.step()
                 st.rerun()
             st.caption("Restore all faults leaves environment unchanged")
-        
+
         # System Health Status
         health = assess(last, twin.network, twin.storage)
         if health.measurement_system == "OPERATIONAL":
@@ -204,10 +205,10 @@ def content() -> None:
             f"**Environment:** {twin.environment_mode} · **Gas:** {last['gas_channel_status']} · "
             f"**Network:** {twin.network} · **Storage:** {twin.storage}"
         )
-        
+
         # System at a Glance
         glance(twin, running)
-        
+
         # Live Monitoring Charts
         st.markdown("### 📈 Live Monitoring")
         line(
@@ -225,7 +226,7 @@ def content() -> None:
             f"Local log: {len(twin.local_ids)} · Retries: {twin.retries} · "
             f"Recovery time: {twin.recovery_time_s if twin.recovery_time_s is not None else '—'} s"
         )
-        
+
         # Additional environmental charts
         col1, col2 = st.columns(2)
         with col1:
@@ -237,22 +238,20 @@ def content() -> None:
         sensor_commissioning_page(twin)
 
     elif page == "🔧 Hardware & Architecture":
-        st.markdown(
-            "**Virtual hardware demonstration and system architecture**"
-        )
+        st.markdown("**Virtual hardware demonstration and system architecture**")
         demonstrator_page(ROOT, twin, running)
-        
+
         st.markdown("### 🖥️ Virtual Hardware Prototype (Wokwi)")
         st.caption(
             "Hero node: DHT22 + DS18B20 + BMP180 + MQ-2 + microSD. Use **Wokwi VS Code** with compiled firmware "
             "(see `docs/06_driver_configuration.md`). MQ-2 is simulator-only."
         )
         render_wokwi_simulation()
-        
+
         # Hardware Details
         with st.expander("📐 Hardware Specifications", expanded=False):
             hardware_page(ROOT)
-        
+
         # System Architecture
         st.markdown("### 🏗️ System Architecture")
         st.info(
@@ -300,15 +299,17 @@ def content() -> None:
             margin=dict(t=0, b=0),
         )
         st.plotly_chart(fig, width="stretch")
-        
+
         # Modbus Commissioning Bench
         with st.expander("🔌 Modbus RTU Commissioning Bench", expanded=False):
             st.markdown("Protocol-level simulation for reference analyzer integration")
             commissioning_page(ROOT)
 
     elif page == "📊 Validation & Technical Details":
-        st.markdown("**Calibration methodology, data quality, and system technical specifications**")
-        
+        st.markdown(
+            "**Calibration methodology, data quality, and system technical specifications**"
+        )
+
         # Calibration & Validation
         st.markdown("### 📐 Calibration & Validation Workflow")
         calibrated, report = validation_data()
@@ -372,14 +373,14 @@ def content() -> None:
             "⚠️ **Synthetic validation workflow demonstration.** Not evidence of physical sensor performance. "
             "Laboratory validation with certified reference gases required."
         )
-        
+
         # Data Quality Summary
         st.markdown("### 📋 Data Quality Summary")
         qa, qb, qc = st.columns(3)
         qa.metric("Valid", int((frame.quality_flags == "VALID").sum()))
         qb.metric("Flagged", int((frame.quality_flags != "VALID").sum()))
         qc.metric("Completeness", f"{completeness:.1f}%")
-        
+
         with st.expander("📊 Quality Details & Data Export", expanded=False):
             st.write("Flagged values are retained; no automatic deletion.")
             twin.quality = type(twin.quality)(
@@ -395,12 +396,14 @@ def content() -> None:
                 "measurements.csv",
                 "text/csv",
             )
-        
+
         # Event Log
         with st.expander("📜 System Event Log", expanded=False):
-            events = pd.DataFrame(twin.events, columns=["timestamp", "severity", "event_type", "description"])
+            events = pd.DataFrame(
+                twin.events, columns=["timestamp", "severity", "event_type", "description"]
+            )
             st.dataframe(events.iloc[::-1].head(50), hide_index=True, width="stretch")
-        
+
         # Technical Details
         st.markdown("### ⚙️ Technical Specifications")
         st.json(

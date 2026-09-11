@@ -79,10 +79,7 @@ def sensor_commissioning_page(twin) -> None:
         f"**Overall status:** {_status_badge(qc['status'])}"
     )
     if qc["status"] == "WARNING":
-        st.warning(
-            f"Suspected sensor: **{qc['suspected_sensor']}**  \n"
-            f"Flag: `{qc['flag']}`"
-        )
+        st.warning(f"Suspected sensor: **{qc['suspected_sensor']}**  \nFlag: `{qc['flag']}`")
     elif qc["status"] == "PASS":
         st.success("All temperature channels agree within threshold.")
 

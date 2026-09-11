@@ -9,13 +9,7 @@ from shutil import copy2
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "firmware" / ".pio" / "build" / "esp32dev"
 TARGET = ROOT / "wokwi"
-ESPTOOL = (
-    Path.home()
-    / ".platformio"
-    / "packages"
-    / "tool-esptoolpy"
-    / "esptool.py"
-)
+ESPTOOL = Path.home() / ".platformio" / "packages" / "tool-esptoolpy" / "esptool.py"
 
 
 def _require_build_artifacts() -> tuple[Path, Path, Path, Path]:
@@ -103,10 +97,7 @@ def main() -> None:
     )
 
     (TARGET / "wokwi.toml").write_text(
-        "[wokwi]\n"
-        "version = 1\n"
-        "firmware = 'flasher_args.json'\n"
-        "elf = 'firmware.elf'\n",
+        "[wokwi]\nversion = 1\nfirmware = 'flasher_args.json'\nelf = 'firmware.elf'\n",
         encoding="utf-8",
     )
 

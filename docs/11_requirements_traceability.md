@@ -8,7 +8,7 @@ This is the authoritative source for implementation and evidence status. Other d
 | Sensor selection and procurement | `03_sensor_selection.md` | Engineering design | Selection documented; procurement pending |
 | Microcontroller programming | `firmware/` | Implemented / build-tested | ESP32 firmware compiles |
 | Virtual sensor integration | `wokwi/diagram.json`, `firmware/` | Virtual / implemented | Pin-exact source and firmware paths |
-| Firmware pin contract | `firmware/include/Config.h` | Implemented source contract | Automated consistency check required |
+| Firmware pin contract | `firmware/include/Config.h` | Implemented and test-covered | Automated `Config.h` to Wokwi diagram consistency check passes in `tests/test_wiring_contract.py` |
 | Wiring | `05_wiring_and_interfaces.md` | Virtual/design-stage | Physical wiring pending |
 | Digital, 1-Wire, I2C, SPI and ADC interfaces | `firmware/`, `wokwi/` | Implemented in software/virtual | No physical electrical evidence |
 | UART/RS-485/Modbus | `firmware/`, `simulator/`, tests | Software implemented and host-tested | Physical transceiver/bus pending |
