@@ -3,7 +3,7 @@ from pathlib import Path
 from streamlit.testing.v1 import AppTest
 
 
-def test_dashboard_three_pages_and_independent_controls():
+def test_dashboard_four_pages_and_independent_controls():
     app = AppTest.from_file(str(Path(__file__).parents[1] / "dashboard/app.py"))
     app.run(timeout=60)
     assert not app.exception
@@ -31,7 +31,6 @@ def test_dashboard_three_pages_and_independent_controls():
 
     for page in [
         "🏠 Overview & Live System",
-        "🧭 Bench-to-Barn Demonstrator",
         "🌡️ Sensor Commissioning",
         "🔧 Hardware & Architecture",
         "📊 Validation & Technical Details",
@@ -39,7 +38,7 @@ def test_dashboard_three_pages_and_independent_controls():
         app.sidebar.radio[0].set_value(page).run(timeout=60)
         assert not app.exception, page
 
-    app.sidebar.radio[0].set_value("🧭 Bench-to-Barn Demonstrator").run(timeout=60)
+    app.sidebar.radio[0].set_value("🔧 Hardware & Architecture").run(timeout=60)
     assert any("Bench-to-Barn Engineering Demonstrator" in item.value for item in app.markdown)
     assert any("DHT22" in str(item.value) for item in app.dataframe)
 

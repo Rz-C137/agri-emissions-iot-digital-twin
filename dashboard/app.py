@@ -56,7 +56,6 @@ with st.sidebar:
         "Navigation",
         [
             "🏠 Overview & Live System",
-            "🧭 Bench-to-Barn Demonstrator",
             "🌡️ Sensor Commissioning",
             "🔧 Hardware & Architecture",
             "📊 Validation & Technical Details",
@@ -114,10 +113,7 @@ def content() -> None:
     page_title = page.split(" ", 1)[1] if " " in page else page
     st.title(page_title)
 
-    if page == "🧭 Bench-to-Barn Demonstrator":
-        demonstrator_page(ROOT, twin, running)
-
-    elif page == "🏠 Overview & Live System":
+    if page == "🏠 Overview & Live System":
         st.markdown(
             "**Virtual commissioning prototype demonstrating firmware architecture, fault handling, and data quality assurance**"
         )
@@ -244,6 +240,7 @@ def content() -> None:
         st.markdown(
             "**Virtual hardware demonstration and system architecture**"
         )
+        demonstrator_page(ROOT, twin, running)
         
         st.markdown("### 🖥️ Virtual Hardware Prototype (Wokwi)")
         st.caption(
