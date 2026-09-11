@@ -7,6 +7,12 @@ def test_dashboard_four_pages_and_independent_controls():
     app = AppTest.from_file(str(Path(__file__).parents[1] / "dashboard/app.py"))
     app.run(timeout=60)
     assert not app.exception
+    assert app.sidebar.radio[0].options == [
+        "🏠 Overview & Live System",
+        "🌡️ Sensor Commissioning",
+        "🔧 Hardware & Architecture",
+        "📊 Validation & Technical Details",
+    ]
 
     app.sidebar.radio[0].set_value("🏠 Overview & Live System").run(timeout=60)
     assert not app.exception
@@ -39,7 +45,9 @@ def test_dashboard_four_pages_and_independent_controls():
         assert not app.exception, page
 
     app.sidebar.radio[0].set_value("🔧 Hardware & Architecture").run(timeout=60)
-    assert any("Bench-to-Barn Engineering Demonstrator" in item.value for item in app.markdown)
+    assert any("A. System at a glance" in item.value for item in app.markdown)
+    assert any("C. Bench-to-Barn architecture" in item.value for item in app.markdown)
+    assert any("F. Modbus / RS-485" in item.value for item in app.markdown)
     assert any("DHT22" in str(item.value) for item in app.dataframe)
 
 

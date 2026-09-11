@@ -7,16 +7,12 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from dashboard.commissioning import commissioning_page  # noqa: E402
-from dashboard.demonstrator import demonstrator_page  # noqa: E402
-from dashboard.hardware import glance, hardware_page  # noqa: E402
+from dashboard.hardware import hardware_page  # noqa: E402
 from dashboard.sensor_commissioning import sensor_commissioning_page  # noqa: E402
-from dashboard.wokwi_embed import render_wokwi_simulation  # noqa: E402
 from simulator.engine import SENSOR_MODES, Twin  # noqa: E402
 from simulator.health import assess  # noqa: E402
 from simulator.model import Config  # noqa: E402
@@ -206,10 +202,7 @@ def content() -> None:
             f"**Network:** {twin.network} · **Storage:** {twin.storage}"
         )
 
-        # System at a Glance
-        glance(twin, running)
-
-        # Live Monitoring Charts
+        # One recent trend keeps the overview focused on current operation.
         st.markdown("### 📈 Live Monitoring")
         line(
             frame.tail(180),
@@ -227,94 +220,20 @@ def content() -> None:
             f"Recovery time: {twin.recovery_time_s if twin.recovery_time_s is not None else '—'} s"
         )
 
-        # Additional environmental charts
-        col1, col2 = st.columns(2)
-        with col1:
-            line(frame.tail(180), ["temperature_c"], "Temperature", "°C")
-        with col2:
-            line(frame.tail(180), ["relative_humidity_pct"], "Humidity", "%")
-
     elif page == "🌡️ Sensor Commissioning":
         sensor_commissioning_page(twin)
 
     elif page == "🔧 Hardware & Architecture":
-        st.markdown("**Virtual hardware demonstration and system architecture**")
-        demonstrator_page(ROOT, twin, running)
-
-        st.markdown("### 🖥️ Virtual Hardware Prototype (Wokwi)")
-        st.caption(
-            "Hero node: DHT22 + DS18B20 + BMP180 + MQ-2 + microSD. Use **Wokwi VS Code** with compiled firmware "
-            "(see `docs/06_driver_configuration.md`). MQ-2 is simulator-only."
-        )
-        render_wokwi_simulation()
-
-        # Hardware Details
-        with st.expander("📐 Hardware Specifications", expanded=False):
-            hardware_page(ROOT)
-
-        # System Architecture
-        st.markdown("### 🏗️ System Architecture")
-        st.info(
-            "**Implemented:** Hero ESP32 firmware (DHT22, DS18B20, BMP180, MQ-2, SD, RS-485 Modbus path), "
-            "temperature disagreement QA/QC, Python twin. **Next:** Physical bench + SCD41 humidity compare."
-        )
-        stages = [
-            "Livestock environment\nSynthetic conditions",
-            "Virtual sensors\nGas + T/RH",
-            "Interfaces / ESP32\nADC + digital acquisition",
-            "QA/QC\nRaw values + flags",
-            "Local storage / MQTT\nLogging + retry queue",
-            "Digital twin\nState + events",
-            "Calibration / validation\nIndependent holdout",
-        ]
-        fig = go.Figure()
-        for i, label in enumerate(stages):
-            fig.add_annotation(
-                x=0.5,
-                y=6 - i,
-                text=label.replace("\n", "<br>"),
-                showarrow=False,
-                bgcolor="#e0f0ec",
-                borderpad=12,
-                font=dict(size=15),
-            )
-            if i < 6:
-                fig.add_annotation(
-                    x=0.5,
-                    y=5.4 - i,
-                    ax=0.5,
-                    ay=5.65 - i,
-                    xref="x",
-                    yref="y",
-                    axref="x",
-                    ayref="y",
-                    text="",
-                    showarrow=True,
-                    arrowhead=2,
-                )
-        fig.update_layout(
-            height=760,
-            xaxis=dict(visible=False, range=[0, 1]),
-            yaxis=dict(visible=False, range=[-0.6, 6.6]),
-            margin=dict(t=0, b=0),
-        )
-        st.plotly_chart(fig, width="stretch")
-
-        # Modbus Commissioning Bench
-        with st.expander("🔌 Modbus RTU Commissioning Bench", expanded=False):
-            st.markdown("Protocol-level simulation for reference analyzer integration")
-            commissioning_page(ROOT)
+        hardware_page(ROOT, twin, running)
 
     elif page == "📊 Validation & Technical Details":
-        st.markdown(
-            "**Calibration methodology, data quality, and system technical specifications**"
-        )
+        st.caption("VIRTUAL VALIDATION · synthetic data workflow, not physical sensor accuracy")
+        st.markdown("**Calibration, agreement and QA/QC**")
 
-        # Calibration & Validation
-        st.markdown("### 📐 Calibration & Validation Workflow")
+        st.markdown("### Calibration summary")
         calibrated, report = validation_data()
         st.write(
-            "Current demonstration: affine sensor-to-reference calibration. Temperature/humidity compensation is a possible future extension, not fitted here. A separate, fixed three-day synthetic dataset keeps this comparison reproducible. The first 60% trains a two-parameter linear correction; the final 40% evaluates it without refitting."
+            "An affine correction is fitted on the first 60% of a fixed synthetic dataset and evaluated on the chronological holdout."
         )
         st.caption(
             f"Calibration: corrected = {report['slope']:.4f} × raw + {report['intercept']:.4f} ppm. Training pairs: {report['fit_pairs']}; holdout rows: {report['validation_rows']}."
@@ -322,9 +241,6 @@ def content() -> None:
         st.dataframe(
             pd.DataFrame({"Raw": report["raw"], "Calibrated": report["calibrated"]}),
             width="stretch",
-        )
-        st.write(
-            "Bias is average signed disagreement. MAE is average absolute disagreement. RMSE describes typical disagreement while giving larger errors more weight; lower is better. R² compares errors with reference variability and may be negative. Missing percentage uses all scheduled holdout rows."
         )
         v = calibrated[calibrated.split == "Validation"].copy()
         v["Residual (ppm)"] = v.nh3_calibrated_ppm - v.nh3_reference_ppm
@@ -340,7 +256,7 @@ def content() -> None:
             agreement.add_hline(y=level, line_dash="dash")
         st.plotly_chart(agreement, width="stretch")
         st.caption(
-            "Mean difference ± 1.96 sample SD. Descriptive limits, not confidence intervals or acceptance criteria; time dependence and reference uncertainty remain."
+            "Agreement plot: descriptive limits only; this synthetic result is not a physical acceptance test."
         )
         line(
             v,
@@ -348,40 +264,17 @@ def content() -> None:
             "Independent holdout comparison",
             "NH₃ (ppm)",
         )
-        fig = px.scatter(
-            v,
-            x="nh3_reference_ppm",
-            y=["nh3_raw_ppm", "nh3_calibrated_ppm"],
-            labels={"nh3_reference_ppm": "Virtual reference (ppm)", "value": "Sensor (ppm)"},
-            title="Reference vs sensor",
-        )
-        low, high = v.nh3_reference_ppm.min(), v.nh3_reference_ppm.max()
-        fig.add_scatter(x=[low, high], y=[low, high], mode="lines", name="1:1 agreement")
-        st.plotly_chart(fig, width="stretch")
-        for x, label in [
-            ("nh3_reference_ppm", "Virtual reference (ppm)"),
-            ("timestamp", "Time (UTC)"),
-            ("temperature_c", "Temperature (°C)"),
-            ("relative_humidity_pct", "Relative humidity (%)"),
-        ]:
-            fig = px.scatter(
-                v, x=x, y="Residual (ppm)", labels={x: label}, title=f"Calibrated error vs {label}"
-            )
-            fig.add_hline(y=0, line_dash="dash")
-            st.plotly_chart(fig, width="stretch")
         st.warning(
-            "⚠️ **Synthetic validation workflow demonstration.** Not evidence of physical sensor performance. "
-            "Laboratory validation with certified reference gases required."
+            "Synthetic validation demonstrates the analysis workflow; it does not establish sensor accuracy or field validity."
         )
 
-        # Data Quality Summary
-        st.markdown("### 📋 Data Quality Summary")
+        st.markdown("### QA/QC summary")
         qa, qb, qc = st.columns(3)
         qa.metric("Valid", int((frame.quality_flags == "VALID").sum()))
         qb.metric("Flagged", int((frame.quality_flags != "VALID").sum()))
         qc.metric("Completeness", f"{completeness:.1f}%")
 
-        with st.expander("📊 Quality Details & Data Export", expanded=False):
+        with st.expander("More validation details", expanded=False):
             st.write("Flagged values are retained; no automatic deletion.")
             twin.quality = type(twin.quality)(
                 stale_s=2 * twin.config.interval_s,
@@ -396,46 +289,21 @@ def content() -> None:
                 "measurements.csv",
                 "text/csv",
             )
-
-        # Event Log
-        with st.expander("📜 System Event Log", expanded=False):
             events = pd.DataFrame(
                 twin.events, columns=["timestamp", "severity", "event_type", "description"]
             )
+            st.markdown("#### Event log")
             st.dataframe(events.iloc[::-1].head(50), hide_index=True, width="stretch")
-
-        # Technical Details
-        st.markdown("### ⚙️ Technical Specifications")
-        st.json(
-            {
-                "sampling_interval_s": twin.config.interval_s,
-                "seed": twin.config.seed,
-                "interfaces_implemented": "DHT22 digital / ADC analog / microSD SPI (firmware)",
-                "interfaces_proposed": "NH₃-B1 electrochemical (requires potentiostat) / SCD41 I²C (driver not coded)",
-                "transport": "In-process acknowledged simulation; optional MQTT publisher (QoS 0) is separate",
-                "queue": "Session-memory dictionaries keyed by sequence; no silent eviction",
-                "storage": str(twin.log_path),
-                "quality_contract": "quality_code bitmask + quality_flags pipe-separated names; VALID = 0",
-                "time_contract": "timestamp UTC or null; timestamp_status identifies SIMULATED_UTC/NTP_UTC/UNSYNCHRONIZED; uptime_ms is separate",
-                "firmware_diagnostics": "Environmental sensor OK/ERROR; analog gas channel UNVERIFIED even with plausible ADC counts",
-                "sensor_model": vars(twin.config) | {"start": twin.config.start.isoformat()},
-            }
-        )
-        st.write(
-            "**Sensor simulation details:** The gas_raw field in Python is an illustrative 100 counts/ppm signal, not an actual MQ-2 transfer function. "
-            "ESP32 firmware (separate implementation) reports simulated ADC counts and leaves NH₃ concentration fields empty. "
-            "Calibration in this dashboard is performed only on the independent validation page using a fixed synthetic dataset."
-        )
-        st.write(
-            "**Data persistence:** Memory queues do not survive process termination. CSV files preserve local acquisitions but are not replayed automatically. "
-            "Firmware uses a bounded queue and explicitly counts overflows. "
-            "**Important:** No emission mass flux can be inferred without validated ventilation measurements and reference-method validation."
-        )
-        st.write(
-            "**Scope boundaries:** This is a virtual commissioning environment for measurement-system architecture and fault-handling logic. "
-            "It does **not** simulate barn physics, airflow, animal physiology, or manure processes. "
-            "See `docs/validation_protocol.md` and `docs/marvela_alignment.md` for the proposed physical validation pathway."
-        )
+            st.markdown("#### Technical details")
+            st.json(
+                {
+                    "sampling_interval_s": twin.config.interval_s,
+                    "seed": twin.config.seed,
+                    "storage": str(twin.log_path),
+                    "quality_contract": "quality_code bitmask + quality_flags pipe-separated names; VALID = 0",
+                    "transport": "In-process acknowledged simulation; optional MQTT publisher is separate",
+                }
+            )
 
 
 content()

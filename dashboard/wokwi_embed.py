@@ -56,24 +56,27 @@ def _build_firmware() -> tuple[bool, str]:
     return result.returncode == 0, "\n".join(output.splitlines()[-18:])
 
 
-def render_wokwi_simulation() -> None:
+def render_wokwi_simulation(compact: bool = False) -> None:
     """Render the Wokwi circuit canvas and the local firmware handoff."""
     payload = _load_project_payload()
     if payload is None:
         st.warning("Wokwi source files not found in `wokwi/`.")
         return
 
-    st.info(
-        "Repository circuit view is shown below. The previous embedded Wokwi frame was removed "
-        "because it had no valid Wokwi project session and could only display Loading simulation."
-    )
-    st.image(
-        str(ROOT / "docs/figures/virtual_hardware_overview.svg"),
-        caption="ESP32 hero node: DHT22, DS18B20, BMP180, MQ-2 and microSD",
-        width="stretch",
-    )
+    if not compact:
+        st.info(
+            "Compile the firmware locally, then use the official Wokwi editor workflow to run the binary with this diagram."
+        )
+        st.image(
+            str(ROOT / "docs/figures/virtual_hardware_overview.svg"),
+            caption="ESP32 hero node: DHT22, DS18B20, BMP180, MQ-2 and microSD",
+            width="stretch",
+        )
 
-    with st.expander("Local ESP32 firmware", expanded=True):
+    firmware_container = (
+        st.container() if compact else st.expander("Local ESP32 firmware", expanded=True)
+    )
+    with firmware_container:
         st.code("pio run -d firmware", language="powershell")
         if st.button("Compile firmware locally", type="primary"):
             with st.spinner("Compiling ESP32 firmware with PlatformIO..."):
@@ -96,7 +99,10 @@ def render_wokwi_simulation() -> None:
         else:
             st.caption("No local firmware artifact yet. Compile it above.")
 
-    st.markdown("#### Run the compiled firmware in Wokwi")
+    if not compact:
+        st.markdown("#### Run the compiled firmware in Wokwi")
+    else:
+        st.markdown("**Firmware handoff**")
     st.link_button("Open Wokwi ESP32 editor", "https://wokwi.com/projects/new/esp32")
     st.markdown(
         "In the editor, upload `wokwi/diagram.json`, then use **Upload Firmware and Start Simulation** "
@@ -110,8 +116,6 @@ def render_wokwi_simulation() -> None:
         mime="application/json",
     )
 
-    with st.expander("Manual Wokwi setup", expanded=False):
-        st.markdown(
-            "Upload `wokwi/diagram.json`, `wokwi/sketch.ino`, and `wokwi/libraries.txt` "
-            "into a new ESP32 project on wokwi.com."
-        )
+    if not compact:
+        with st.expander("Manual Wokwi setup", expanded=False):
+            st.markdown("Detailed setup is maintained in the root README under **Wokwi workflow**.")
