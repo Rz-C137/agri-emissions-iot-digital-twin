@@ -28,6 +28,10 @@ def _canonical_pin(pin: str) -> str:
         part = "dht"
     elif part in {"pullup", "r1", "dht_pullup"}:
         part = "pullup"
+    elif part in {"ds18_pullup", "r2"}:
+        part = "ds18_pullup"
+    elif part == "ds18" and signal in {"DATA", "DQ"}:
+        signal = "DQ"
     elif part in {"joystick", "potentiometer", "gas_analog"} and signal in {"VERT", "SIG", "AO"}:
         part, signal = "gas", "AO"
     if part == "sd":
@@ -46,23 +50,32 @@ def wiring() -> dict:
     config = (ROOT / "firmware/include/Config.h").read_text()
     pins = {
         key: int(re.search(rf"\b{key}\s*=\s*(\d+)", config)[1])
-        for key in ("DHT_PIN", "GAS_PIN", "SD_CS", "SAMPLE_MS")
+        for key in ("DHT_PIN", "DS18B20_PIN", "GAS_PIN", "SD_CS", "I2C_SDA", "I2C_SCL", "SAMPLE_MS")
     }
     expected = [
         ("dht:SDA", f"esp:D{pins['DHT_PIN']}"),
+        ("ds18:DQ", f"esp:D{pins['DS18B20_PIN']}"),
+        ("bmp:SDA", f"esp:D{pins['I2C_SDA']}"),
+        ("bmp:SCL", f"esp:D{pins['I2C_SCL']}"),
         ("gas:AO", f"esp:D{pins['GAS_PIN']}"),
         ("sd:CS", f"esp:D{pins['SD_CS']}"),
         ("sd:SCK", "esp:D18"),
         ("sd:MISO", "esp:D19"),
         ("sd:MOSI", "esp:D23"),
         ("dht:VCC", "esp:3V3"),
+        ("ds18:VCC", "esp:3V3"),
+        ("bmp:VCC", "esp:3V3"),
         ("sd:VCC", "esp:3V3"),
         ("gas:VCC", "esp:VIN"),
         ("dht:GND", "esp:GND.1"),
+        ("ds18:GND", "esp:GND.1"),
+        ("bmp:GND", "esp:GND.1"),
         ("gas:GND", "esp:GND.1"),
         ("sd:GND", "esp:GND.1"),
         ("pullup:1", "esp:3V3"),
         ("pullup:2", "dht:SDA"),
+        ("ds18_pullup:1", "esp:3V3"),
+        ("ds18_pullup:2", "ds18:DQ"),
     ]
     for a, b in expected:
         if _canonical_edge(a, b) not in edges:

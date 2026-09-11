@@ -1,108 +1,84 @@
-/*
- * Agricultural IoT Emission Monitoring — Wokwi virtual hardware demo
- *
- * Hardware (see diagram.json):
- *   DHT22 DATA  -> GPIO4  (10 kΩ pull-up)
- *   Gas AO      -> GPIO34 (ADC1, simulator-only MQ-2 surrogate)
- *   microSD SPI -> CS=5, SCK=18, MISO=19, MOSI=23
- *   Status LED  -> GPIO2
- */
+#include <Arduino.h>
+#include "Config.h"
+#include "SensorManager.h"
+#include "Quality.h"
+#include "Logger.h"
+#include "Telemetry.h"
+#include "FaultManager.h"
+#if AGRI_ENABLE_RS485
+#include "Rs485Transport.h"
+Rs485Transport referenceBus;
+#endif
 
-#include <DHT.h>
-#include <SD.h>
-#include <SPI.h>
+SensorManager sensors;
+Logger logger;
+Telemetry telemetry;
+SystemState state;
+uint32_t lastSample = 0, lastStorageRetry = 0, sequence = 0;
 
-#define DHT_PIN 4
-#define DHT_TYPE DHT22
-#define GAS_PIN 34
-#define SD_CS_PIN 5
-#define LED_PIN 2
-#define SAMPLE_MS 5000
-
-DHT dht(DHT_PIN, DHT_TYPE);
-
-unsigned long lastSample = 0;
-uint32_t sequence = 0;
-bool sdReady = false;
-
-void setup() {
-  Serial.begin(115200);
-  delay(500);
-  Serial.println();
-  Serial.println("=== Agricultural Emission Monitoring System ===");
-  Serial.println("Wokwi virtual hardware demonstrator");
-  Serial.println("MQ-2 is an analog surrogate only — not selective NH3");
-  Serial.println("==============================================");
-
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-
-  dht.begin();
-  analogReadResolution(12);
-  Serial.println("[OK] DHT22 initialized");
-
-  if (SD.begin(SD_CS_PIN)) {
-    sdReady = true;
-    Serial.println("[OK] SD card initialized");
-    File dataFile = SD.open("/data.csv", FILE_WRITE);
-    if (dataFile) {
-      dataFile.println("timestamp_s,sequence,temp_c,humidity_pct,gas_raw,gas_voltage_v,status");
-      dataFile.close();
-      Serial.println("[OK] /data.csv created");
-    }
-  } else {
-    Serial.println("[ERROR] SD card initialization failed");
-  }
-
-  Serial.println();
-  Serial.println("timestamp_s,sequence,temp_c,humidity_pct,gas_raw,gas_voltage_v,status");
-  Serial.println("----------------------------------------------------------------");
+void logTemperatureQc(const Measurement& m) {
+    Serial.printf(
+        "# TEMP_QC,dht=%.2f,ds18=%.2f,bmp=%.2f,max_delta=%.2f,status=%s,suspect=%s\n",
+        m.temperature_dht22_c, m.temperature_ds18b20_c, m.temperature_bmp180_c,
+        m.temp_max_disagreement_c, m.temp_sensor_disagreement ? "WARNING" : "PASS",
+        m.suspected_sensor);
 }
 
+void setup() {
+    Serial.begin(115200);
+    pinMode(Config::LED_PIN, OUTPUT);
+    sensors.begin();
+#if AGRI_ENABLE_RS485
+    referenceBus.begin(Config::RS485_BAUD, SERIAL_8E1);
+#endif
+    state.storage = logger.begin();
+    telemetry.begin();
+    configTime(0, 0, "pool.ntp.org");
+    FaultManager::event(state.storage ? "INFO" : "ERROR",
+                        state.storage ? "SD initialized" : "SD initialization failed");
+    FaultManager::event("INFO", "Hero node: multi-temperature QA/QC enabled");
+}
 void loop() {
-  const unsigned long now = millis();
-  if (now - lastSample < SAMPLE_MS) {
-    delay(10);
-    return;
-  }
-  lastSample = now;
-
-  const float temperature = dht.readTemperature();
-  const float humidity = dht.readHumidity();
-  const int gasRaw = analogRead(GAS_PIN);
-  const float gasVoltage = gasRaw * (3.3f / 4095.0f);
-  const bool sensorOk = !isnan(temperature) && !isnan(humidity);
-
-  digitalWrite(LED_PIN, sensorOk && sdReady ? HIGH : LOW);
-
-  const unsigned long seconds = now / 1000;
-  char line[160];
-  if (sensorOk) {
-    snprintf(line, sizeof(line), "%lu,%lu,%.1f,%.1f,%d,%.3f,%s",
-             seconds, sequence, temperature, humidity, gasRaw, gasVoltage,
-             sdReady ? "OK" : "SD_ERR");
-  } else {
-    snprintf(line, sizeof(line), "%lu,%lu,ERROR,ERROR,%d,%.3f,%s",
-             seconds, sequence, gasRaw, gasVoltage, sdReady ? "OK" : "SD_ERR");
-  }
-  Serial.println(line);
-
-  if (sdReady) {
-    File dataFile = SD.open("/data.csv", FILE_APPEND);
-    if (dataFile) {
-      dataFile.println(line);
-      dataFile.close();
-    } else {
-      sdReady = false;
-      Serial.println("[ERROR] SD write failed");
+    const uint32_t now = millis();
+    if (now - lastSample >= Config::SAMPLE_MS) {
+        lastSample = now;
+        auto m = sensors.acquire(sequence++);
+        m.quality = Quality::evaluate(m);
+        m.network_ok = state.network;
+        m.storage_ok = state.storage;
+        m.buffered = !state.network;
+        if (!m.environmental_sensor_ok) FaultManager::sensorFailure(state);
+        if (m.temp_sensor_disagreement)
+            FaultManager::event("WARNING", "TEMP_SENSOR_DISAGREEMENT");
+        if (state.storage && !logger.append(m)) state.storage = false;
+        m.storage_ok = state.storage;
+        if (!state.storage)
+            FaultManager::event("ERROR",
+                                "Local write unavailable; telemetry queue attempt follows");
+        if (!telemetry.enqueue(m)) {
+            state.queue_overflows++;
+            FaultManager::event("ERROR", "Telemetry queue full; record rejected");
+        }
+        Serial.println(Logger::csv(m));
+        logTemperatureQc(m);
+        digitalWrite(Config::LED_PIN, m.environmental_sensor_ok && state.storage &&
+                                           !m.temp_sensor_disagreement);
+#if AGRI_ENABLE_RS485
+        const auto reference = ModbusRtu::poll(referenceBus, Config::RS485_TIMEOUT_MS);
+        Serial.printf("# MODBUS_REFERENCE,sequence=%lu,status=%s",
+                      static_cast<unsigned long>(m.sequence),
+                      ModbusRtu::statusName(reference.status));
+        if (reference.status == ModbusRtu::Status::OK)
+            Serial.printf(",nh3_ppm=%.2f,ch4_ppm=%.2f,n2o_ppm=%.3f", reference.nh3,
+                          reference.ch4, reference.n2o);
+        Serial.println();
+#endif
     }
-  }
-
-  sequence++;
-  if (sequence % 10 == 0) {
-    Serial.println("----------------------------------------------------------------");
-    Serial.printf("[INFO] %lu samples | sensor=%s | storage=%s\n",
-                  sequence, sensorOk ? "OK" : "ERROR", sdReady ? "OK" : "ERROR");
-    Serial.println("----------------------------------------------------------------");
-  }
+    if (!state.storage && now - lastStorageRetry >= Config::RETRY_MS) {
+        lastStorageRetry = now;
+        state.storage = logger.begin();
+        if (state.storage) FaultManager::event("INFO", "Storage reinitialized");
+    }
+    telemetry.service(state);
+    delay(1);
 }

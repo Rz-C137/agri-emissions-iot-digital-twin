@@ -8,6 +8,7 @@ from pathlib import Path
 
 from simulator.model import Config, Environment
 from simulator.quality import QualityConfig, check, quality_code
+from simulator.sensor_validation import TEMP_FAULT_MODES, assess_temperature_agreement
 
 SENSOR_MODES = (
     "NORMAL",
@@ -42,6 +43,8 @@ class Twin:
         self.log_path = log_path
         self.sensor_mode = "NORMAL"
         self.environment_mode = "NORMAL"
+        self.temp_fault_mode = "NONE"
+        self.temp_fault_offset_c = 6.0
         self.sensor_start = 0
         self.network = "ONLINE"
         self.storage = "OK"
@@ -68,6 +71,17 @@ class Twin:
             "SENSOR_STATE",
             f"Gas sensor mode: {old} -> {mode}.",
         )
+
+    def set_temp_fault(self, mode: str) -> None:
+        if mode not in TEMP_FAULT_MODES:
+            raise ValueError(f"Unknown temperature fault mode: {mode}")
+        if mode != self.temp_fault_mode:
+            old, self.temp_fault_mode = self.temp_fault_mode, mode
+            self.event(
+                "WARNING" if mode != "NONE" else "INFO",
+                "TEMP_FAULT",
+                f"Temperature fault injection: {old} -> {mode}.",
+            )
 
     def set_environment(self, mode: str) -> None:
         if mode not in ENVIRONMENT_MODES:
@@ -102,6 +116,7 @@ class Twin:
     def restore_all(self) -> None:
         """Explicitly restore sensor and infrastructure; leave environmental conditions unchanged."""
         self.set_sensor("NORMAL")
+        self.set_temp_fault("NONE")
         self.set_network(True)
         self.set_storage(True)
 
@@ -131,6 +146,18 @@ class Twin:
         for _ in range(count):
             index = len(self.records)
             values = self.environment.sample(index, self.environment_mode == "HIGH_NH3")
+            if self.temp_fault_mode == "DHT_BIAS":
+                values["temperature_dht22_c"] = values.get("temperature_dht22_c", 0) + self.temp_fault_offset_c
+                values["temperature_c"] = values["temperature_dht22_c"]
+            elif self.temp_fault_mode == "DS18_BIAS":
+                values["temperature_ds18b20_c"] = values.get("temperature_ds18b20_c", 0) + self.temp_fault_offset_c
+            elif self.temp_fault_mode == "BMP_BIAS":
+                values["temperature_bmp180_c"] = values.get("temperature_bmp180_c", 0) + self.temp_fault_offset_c
+            temp_qc = assess_temperature_agreement(
+                values.get("temperature_dht22_c"),
+                values.get("temperature_ds18b20_c"),
+                values.get("temperature_bmp180_c"),
+            )
             sensor = "OK"
             if self.sensor_mode in ("SENSOR_DISCONNECTED", "SENSOR_TIMEOUT"):
                 sensor = "DISCONNECTED" if self.sensor_mode == "SENSOR_DISCONNECTED" else "TIMEOUT"
@@ -164,6 +191,10 @@ class Twin:
                 buffered=self.network != "ONLINE",
                 scenario=self.environment_mode,
                 sensor_mode=self.sensor_mode,
+                temp_qc_status=temp_qc["status"],
+                temp_qc_flag=temp_qc["flag"],
+                temp_max_disagreement_c=temp_qc["max_disagreement_c"],
+                temp_suspected_sensor=temp_qc["suspected_sensor"],
                 simulated=True,
             )
             record["quality_flags"] = check(record, self.records, self.quality)

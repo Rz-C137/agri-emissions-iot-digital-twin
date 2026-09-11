@@ -58,8 +58,16 @@ class Environment:
             + c.reference_drift_ppm_day * days
             + self.rng.normal(0, c.reference_noise_ppm)
         )
+        temperature_dht22_c = t + self.rng.normal(0, 0.08)
+        temperature_ds18b20_c = t + self.rng.normal(0, 0.06)
+        temperature_bmp180_c = t + self.rng.normal(0, 0.10)
+        pressure_hpa = 1013.0 + 2.0 * np.sin(phase - 0.2) + self.rng.normal(0, 0.3)
         return dict(
-            temperature_c=t,
+            temperature_c=temperature_dht22_c,
+            temperature_dht22_c=temperature_dht22_c,
+            temperature_ds18b20_c=temperature_ds18b20_c,
+            temperature_bmp180_c=temperature_bmp180_c,
+            pressure_hpa=pressure_hpa,
             relative_humidity_pct=h,
             gas_raw=raw * 100,
             nh3_raw_ppm=raw,

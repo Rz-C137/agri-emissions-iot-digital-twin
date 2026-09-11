@@ -31,6 +31,7 @@ def test_dashboard_three_pages_and_independent_controls():
 
     for page in [
         "🏠 Overview & Live System",
+        "🌡️ Sensor Commissioning",
         "🔧 Hardware & Architecture",
         "📊 Validation & Technical Details",
     ]:

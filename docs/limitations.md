@@ -15,3 +15,5 @@
 - NTP-unavailable firmware UTC is null/blank with UNSYNCHRONIZED status; uptime is a separate duration. Restarted sequence numbers require a run identifier in a future multi-session ingestion bridge.
 - Wokwi does not validate physical voltage safety, contamination resistance, sensor warm-up, component aging or EMC. A real MQ2 module may require output conditioning before a 3.3 V ESP32 ADC.
 - The current diagrams, browser setup and firmware compilation support reproducibility; the revision-specific browser and physical verification evidence is recorded separately in verification.md.
+- **Physical bench evidence** (wiring photos, soldered assemblies, measured voltages, RS-485 loopback logs) is intentionally separated under `physical_prototype/` and is **not claimed** until you complete real tests and fill those files.
+- The SCD41 driver is implemented in firmware (`esp32dev_scd41`) but **not yet validated** against a physical module on the bench.

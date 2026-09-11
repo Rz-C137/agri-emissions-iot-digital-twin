@@ -15,9 +15,25 @@ This repository presents an **engineering design and implementation workflow** f
 ✅ **Deployment planning** with installation strategy, environmental considerations, and maintenance protocols  
 ✅ **Validation methodology** suitable for laboratory calibration and field campaigns  
 
-**Current status:** Virtual commissioning and software implementation complete. Physical hardware assembly, laboratory calibration, and farm deployment are planned future experimental stages  
+**Current status:** Virtual commissioning and software implementation are strong; **hands-on bench evidence is the next priority** after David Janke’s feedback (sensor procurement, wiring/soldering, driver install, on-site commissioning). No fabricated lab results or photos are claimed.
 
 **Target application:** Continuous monitoring of NH₃, CO₂, temperature, and humidity in dairy cow barns for emission inventory and mitigation research.
+
+### Hybrid architecture (target for application)
+
+```text
+REAL BENCH NODE (in progress)          DIGITAL TWIN (implemented)
+─────────────────────────────          ────────────────────────────
+DHT22 or SCD41 on ESP32                NH₃ / CH₄ / N₂O simulation
+microSD + MQTT                         Fault injection + validation
+RS-485 Modbus (firmware ready)         Reference-analyzer workflow
+         │                                      │
+         └────────── dashboard / docs ──────────┘
+```
+
+Bench templates and honest commissioning records: [`physical_prototype/`](physical_prototype/README.md) · [procurement](docs/sensor_procurement.md) · [commissioning report](docs/bench_commissioning_report.md) · [driver setup](docs/hardware_commissioning.md)
+
+**Redesign master plan (bench-to-barn demonstrator):** [docs/demonstrator_blueprint.md](docs/demonstrator_blueprint.md) · [farm context (LVAT-like)](docs/farm_context.md) · [ecosystem diagram](docs/ecosystem_overview.md) · [job requirement matrix](docs/requirement_matrix.md) · [implementation roadmap](docs/implementation_roadmap.md)
 
 ---
 
@@ -132,12 +148,13 @@ To provide complete transparency for reviewers, the following table summarizes t
 | **Validation Methodology** | ✅ Implemented | Chronological holdout, statistical metrics, Bland-Altman |
 | **Dashboard** | ✅ Implemented | Streamlit interface for virtual system |
 | **Circuit Design** | 📋 Design-stage | Schematics and specifications documented |
-| **RS-485 Hardware** | ⏳ Future implementation | Electrical commissioning not performed |
-| **I²C Firmware Driver** | ⏳ Future implementation | Bus design documented, driver not coded |
-| **NH₃-B1 Integration** | ⏳ Future implementation | Sensor selected, front-end requires potentiostat design |
-| **SCD41 Integration** | ⏳ Future implementation | Module selected, firmware integration pending |
-| **Laboratory Calibration** | ⏳ Future experimental stage | Protocol documented, physical experiment not performed |
-| **Field Deployment** | ⏳ Future experimental stage | Strategy documented, installation not performed |
+| **RS-485 Hardware** | ⏳ Bench pending | Firmware `Rs485Transport` ready; physical wiring/soldering evidence not yet in repo |
+| **SCD41 I²C Driver** | ✅ Implemented (firmware) | `Scd41.cpp` — build with `pio run -e esp32dev_scd41`; **not yet bench-validated** |
+| **Physical bench assembly** | ⏳ In progress | Templates in [`physical_prototype/`](physical_prototype/README.md); photos/measurements TBD |
+| **Sensor procurement workflow** | 📋 Documented | [sensor_procurement.md](docs/sensor_procurement.md) |
+| **NH₃-B1 Integration** | ⏳ Future implementation | Sensor selected; potentiostat front-end design-stage only |
+| **Laboratory Calibration** | ⏳ Future experimental stage | Protocol documented; no physical calibration campaign yet |
+| **Field Deployment** | ⏳ Future experimental stage | Strategy documented; on-site commissioning not performed |
 
 **Legend:**
 - ✅ **Implemented and tested** - Coded, tested, and verified in virtual/host environment

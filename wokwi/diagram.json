@@ -21,6 +21,22 @@
       }
     },
     {
+      "type": "wokwi-ds18b20",
+      "id": "ds18",
+      "top": -96,
+      "left": 432,
+      "attrs": {
+        "temperature": "22.4"
+      }
+    },
+    {
+      "type": "wokwi-bmp180",
+      "id": "bmp",
+      "top": 96,
+      "left": 432,
+      "attrs": {}
+    },
+    {
       "type": "wokwi-microsd-card",
       "id": "sd",
       "top": 240,
@@ -34,6 +50,15 @@
       "left": 153.6,
       "attrs": {
         "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "ds18_pullup",
+      "top": -115.2,
+      "left": 345.6,
+      "attrs": {
+        "value": "4700"
       }
     },
     {
@@ -69,7 +94,7 @@
       "top": 336,
       "left": -172.8,
       "attrs": {
-        "text": "Virtual demonstrator: MQ-2 is NOT selective NH3.\nPhysical build needs NH3-B1 + potentiostat + RS-485.",
+        "text": "Hero node: DHT22+DS18B20+BMP180 temp QA/QC.\nMQ-2 is simulator-only. RS-485 in firmware (bench).",
         "font-size": "11",
         "color": "#993300"
       }
@@ -83,6 +108,15 @@
     ["dht:SDA", "esp:D4", "green", []],
     ["pullup:1", "esp:3V3", "red", []],
     ["pullup:2", "dht:SDA", "green", []],
+    ["ds18:VCC", "esp:3V3", "red", []],
+    ["ds18:GND", "esp:GND.1", "black", []],
+    ["ds18:DQ", "esp:D15", "yellow", []],
+    ["ds18_pullup:1", "esp:3V3", "red", []],
+    ["ds18_pullup:2", "ds18:DQ", "yellow", []],
+    ["bmp:VCC", "esp:3V3", "red", []],
+    ["bmp:GND", "esp:GND.1", "black", []],
+    ["bmp:SDA", "esp:D21", "blue", []],
+    ["bmp:SCL", "esp:D22", "purple", []],
     ["sd:VCC", "esp:3V3", "red", []],
     ["sd:GND", "esp:GND.1", "black", []],
     ["sd:CS", "esp:D5", "orange", []],

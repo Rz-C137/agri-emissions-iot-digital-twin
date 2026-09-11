@@ -1,4 +1,4 @@
 [wokwi]
 version = 1
-firmware = 'wokwi/firmware.bin'
+firmware = 'wokwi/flasher_args.json'
 elf = 'wokwi/firmware.elf'

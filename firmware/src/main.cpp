@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "Config.h"
-#include "Sensors.h"
+#include "SensorManager.h"
 #include "Quality.h"
 #include "Logger.h"
 #include "Telemetry.h"
@@ -10,11 +10,19 @@
 Rs485Transport referenceBus;
 #endif
 
-Sensors sensors;
+SensorManager sensors;
 Logger logger;
 Telemetry telemetry;
 SystemState state;
 uint32_t lastSample = 0, lastStorageRetry = 0, sequence = 0;
+
+void logTemperatureQc(const Measurement& m) {
+    Serial.printf(
+        "# TEMP_QC,dht=%.2f,ds18=%.2f,bmp=%.2f,max_delta=%.2f,status=%s,suspect=%s\n",
+        m.temperature_dht22_c, m.temperature_ds18b20_c, m.temperature_bmp180_c,
+        m.temp_max_disagreement_c, m.temp_sensor_disagreement ? "WARNING" : "PASS",
+        m.suspected_sensor);
+}
 
 void setup() {
     Serial.begin(115200);
@@ -26,12 +34,12 @@ void setup() {
     state.storage = logger.begin();
     telemetry.begin();
     configTime(0, 0, "pool.ntp.org");
-    FaultManager::event(state.storage ? "INFO" : "ERROR", state.storage ? "SD initialized" : "SD initialization failed");
-    FaultManager::event("INFO", "Virtual surrogate acquisition; MQ2 is not selective NH3");
+    FaultManager::event(state.storage ? "INFO" : "ERROR",
+                        state.storage ? "SD initialized" : "SD initialization failed");
+    FaultManager::event("INFO", "Hero node: multi-temperature QA/QC enabled");
 }
 void loop() {
     const uint32_t now = millis();
-    // Acquisition is scheduled before telemetry so outages do not gate local measurement attempts.
     if (now - lastSample >= Config::SAMPLE_MS) {
         lastSample = now;
         auto m = sensors.acquire(sequence++);
@@ -40,27 +48,36 @@ void loop() {
         m.storage_ok = state.storage;
         m.buffered = !state.network;
         if (!m.environmental_sensor_ok) FaultManager::sensorFailure(state);
+        if (m.temp_sensor_disagreement)
+            FaultManager::event("WARNING", "TEMP_SENSOR_DISAGREEMENT");
         if (state.storage && !logger.append(m)) state.storage = false;
         m.storage_ok = state.storage;
-        if (!state.storage) FaultManager::event("ERROR", "Local write unavailable; telemetry queue attempt follows; record is not durable");
+        if (!state.storage)
+            FaultManager::event("ERROR",
+                                "Local write unavailable; telemetry queue attempt follows");
         if (!telemetry.enqueue(m)) {
             state.queue_overflows++;
-            FaultManager::event("ERROR", "Telemetry queue full; new record rejected; SD copy exists only if local write succeeded");
+            FaultManager::event("ERROR", "Telemetry queue full; record rejected");
         }
         Serial.println(Logger::csv(m));
-        digitalWrite(Config::LED_PIN, m.environmental_sensor_ok && state.storage);
+        logTemperatureQc(m);
+        digitalWrite(Config::LED_PIN, m.environmental_sensor_ok && state.storage &&
+                                           !m.temp_sensor_disagreement);
 #if AGRI_ENABLE_RS485
         const auto reference = ModbusRtu::poll(referenceBus, Config::RS485_TIMEOUT_MS);
-        Serial.printf("# MODBUS_REFERENCE,sequence=%lu,status=%s", static_cast<unsigned long>(m.sequence), ModbusRtu::statusName(reference.status));
+        Serial.printf("# MODBUS_REFERENCE,sequence=%lu,status=%s",
+                      static_cast<unsigned long>(m.sequence),
+                      ModbusRtu::statusName(reference.status));
         if (reference.status == ModbusRtu::Status::OK)
-            Serial.printf(",nh3_ppm=%.2f,ch4_ppm=%.2f,n2o_ppm=%.3f", reference.nh3, reference.ch4, reference.n2o);
+            Serial.printf(",nh3_ppm=%.2f,ch4_ppm=%.2f,n2o_ppm=%.3f", reference.nh3,
+                          reference.ch4, reference.n2o);
         Serial.println();
 #endif
     }
     if (!state.storage && now - lastStorageRetry >= Config::RETRY_MS) {
         lastStorageRetry = now;
         state.storage = logger.begin();
-        if (state.storage) FaultManager::event("INFO", "Storage reinitialized; future local writes resumed");
+        if (state.storage) FaultManager::event("INFO", "Storage reinitialized");
     }
     telemetry.service(state);
     delay(1);

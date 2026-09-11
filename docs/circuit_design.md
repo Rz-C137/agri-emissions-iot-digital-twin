@@ -2,7 +2,7 @@
 
 ## Complete System Schematic
 
-This document presents the production-ready circuit design for agricultural emission monitoring system with NH₃ electrochemical sensor, CO₂/RH/T I²C sensor, RS-485 Modbus interface, and local SD card logging.
+This document presents an **engineering circuit design for prototype development** for agricultural emission monitoring: NH₃ electrochemical front-end (conceptual), CO₂/RH/T I²C sensor, RS-485 Modbus interface, and local SD card logging. It is a design reference for bench and field commissioning—not a validated production-ready assembly.
 
 ## Block Diagram
 

@@ -1,6 +1,5 @@
 """Embed the repository Wokwi project inside Streamlit via the experimental API."""
 
-import base64
 import json
 from pathlib import Path
 
@@ -9,29 +8,38 @@ import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parents[1]
 WOKWI_DIR = ROOT / "wokwi"
-BUILD_DIR = ROOT / "firmware" / ".pio" / "build" / "esp32dev"
 EMBED_CLIENT_ID = "wokwi_client_agri_emissions_demo"
 EMBED_HEIGHT = 720
+SOURCE_SUFFIXES = {".ino", ".h", ".cpp", ".txt"}
+SKIP_FILES = {"README.md", "export.py"}
 
 
-def _firmware_paths() -> tuple[Path, Path]:
-    bin_path = WOKWI_DIR / "firmware.bin"
-    elf_path = WOKWI_DIR / "firmware.elf"
-    if bin_path.exists() and elf_path.exists():
-        return bin_path, elf_path
-    return BUILD_DIR / "firmware.bin", BUILD_DIR / "firmware.elf"
+def _arduino_source_files() -> dict[str, str]:
+    files: dict[str, str] = {}
+    for path in sorted(WOKWI_DIR.iterdir()):
+        if not path.is_file():
+            continue
+        if path.suffix not in SOURCE_SUFFIXES or path.name in SKIP_FILES:
+            continue
+        files[path.name] = path.read_text(encoding="utf-8")
+    return files
 
 
-def _load_project_payload() -> dict[str, str] | None:
-    diagram = (WOKWI_DIR / "diagram.json").read_text(encoding="utf-8")
-    bin_path, elf_path = _firmware_paths()
-    if not bin_path.exists() or not elf_path.exists():
+def _load_project_payload() -> dict[str, object] | None:
+    diagram_path = WOKWI_DIR / "diagram.json"
+    sketch_path = WOKWI_DIR / "sketch.ino"
+    libraries_path = WOKWI_DIR / "libraries.txt"
+    if not diagram_path.exists() or not sketch_path.exists() or not libraries_path.exists():
         return None
+
+    source_files = _arduino_source_files()
+    if "sketch.ino" not in source_files or "libraries.txt" not in source_files:
+        return None
+
     return {
-        "diagram": diagram,
-        "firmware_b64": base64.b64encode(bin_path.read_bytes()).decode("ascii"),
-        "elf_b64": base64.b64encode(elf_path.read_bytes()).decode("ascii"),
-        "firmware_size_kb": f"{bin_path.stat().st_size / 1024:.0f}",
+        "diagram": diagram_path.read_text(encoding="utf-8"),
+        "files": source_files,
+        "cache_bust": str(int(sketch_path.stat().st_mtime)),
     }
 
 
@@ -39,24 +47,24 @@ def render_wokwi_simulation() -> None:
     """Render an interactive Wokwi simulation loaded from this repository."""
     payload = _load_project_payload()
     if payload is None:
-        st.warning(
-            "Compiled firmware not found. Build and copy binaries, then refresh this page:\n\n"
-            "```\npython -m platformio run -d firmware -e esp32dev\n"
-            "python tools/prepare_wokwi_firmware.py\n```"
-        )
+        st.warning("Wokwi source files not found in `wokwi/`.")
         st.code(
             "1. https://wokwi.com/projects/new/esp32\n"
             "2. Paste wokwi/diagram.json\n"
-            "3. Paste wokwi/sketch.ino (Wokwi compiles source in the editor)\n"
+            "3. Paste wokwi/sketch.ino and wokwi/libraries.txt\n"
             "4. Click Start Simulation",
             language="text",
         )
         return
 
     diagram_json = json.dumps(payload["diagram"])
-    firmware_b64 = json.dumps(payload["firmware_b64"])
-    elf_b64 = json.dumps(payload["elf_b64"])
-    size_kb = payload["firmware_size_kb"]
+    files_json = json.dumps(payload["files"])
+    cache_bust = payload["cache_bust"]
+
+    st.info(
+        "First start compiles `sketch.ino` on Wokwi servers and may take 1–2 minutes. "
+        "Wait for the build to finish before clicking Start again."
+    )
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -156,7 +164,7 @@ def render_wokwi_simulation() -> None:
   <div class="layout">
     <iframe
       id="wokwi-embed"
-      src="https://wokwi.com/experimental/embed?client_id={EMBED_CLIENT_ID}"
+      src="https://wokwi.com/experimental/embed?client_id={EMBED_CLIENT_ID}&v={cache_bust}"
       allow="serial; clipboard-read; clipboard-write"
     ></iframe>
     <div class="monitor">
@@ -166,8 +174,7 @@ def render_wokwi_simulation() -> None:
   </div>
   <script type="module">
     const diagram = {diagram_json};
-    const firmwareB64 = {firmware_b64};
-    const elfB64 = {elf_b64};
+    const projectFiles = {files_json};
     const statusEl = document.getElementById("status");
     const outputEl = document.getElementById("serial-output");
     const startBtn = document.getElementById("start-btn");
@@ -199,14 +206,11 @@ def render_wokwi_simulation() -> None:
       async fileUploadText(name, content) {{
         return this.sendCommand("file:upload", {{ name, text: content }});
       }}
-      async fileUploadBinary(name, binaryB64) {{
-        return this.sendCommand("file:upload", {{ name, binary: binaryB64 }});
+      async simStart() {{
+        return this.sendCommand("sim:start", {{}});
       }}
-      async simStart(params) {{
-        return this.sendCommand("sim:start", params);
-      }}
-      async simRestart(opts = {{}}) {{
-        return this.sendCommand("sim:restart", opts);
+      async simRestart() {{
+        return this.sendCommand("sim:restart", {{}});
       }}
       async serialMonitorListen() {{
         return this.sendCommand("serial-monitor:listen");
@@ -243,11 +247,24 @@ def render_wokwi_simulation() -> None:
     }}
 
     async function uploadProject() {{
-      statusEl.textContent = "Uploading diagram and compiled firmware ({size_kb} KB)…";
+      statusEl.textContent = "Uploading Arduino source and libraries…";
       await client.serialMonitorListen();
-      await client.fileUploadText("diagram.json", diagram);
-      await client.fileUploadBinary("firmware.bin", firmwareB64);
-      await client.fileUploadBinary("firmware.elf", elfB64);
+      const uploadOrder = ["libraries.txt", "sketch.ino", "diagram.json"];
+      const uploaded = new Set();
+      for (const name of uploadOrder) {{
+        if (projectFiles[name]) {{
+          await client.fileUploadText(name, projectFiles[name]);
+          uploaded.add(name);
+        }}
+      }}
+      for (const [name, content] of Object.entries(projectFiles)) {{
+        if (!uploaded.has(name)) {{
+          await client.fileUploadText(name, content);
+        }}
+      }}
+      if (!uploaded.has("diagram.json")) {{
+        await client.fileUploadText("diagram.json", diagram);
+      }}
       statusEl.textContent = "Project loaded. Click Start simulation.";
       startBtn.disabled = false;
       restartBtn.disabled = false;
@@ -255,8 +272,8 @@ def render_wokwi_simulation() -> None:
 
     async function startSimulation() {{
       outputEl.textContent = "";
-      statusEl.textContent = "Starting simulation…";
-      await client.simStart({{ firmware: "firmware.bin", elf: "firmware.elf" }});
+      statusEl.textContent = "Compiling on Wokwi (first run may take 1–2 min)…";
+      await client.simStart();
       statusEl.textContent = "Simulation running";
     }}
 
@@ -285,12 +302,15 @@ def render_wokwi_simulation() -> None:
     }});
 
     restartBtn.addEventListener("click", async () => {{
+      restartBtn.disabled = true;
       try {{
         outputEl.textContent = "";
         await client.simRestart();
         statusEl.textContent = "Simulation restarted";
       }} catch (error) {{
         statusEl.textContent = "Restart failed: " + error.message;
+      }} finally {{
+        restartBtn.disabled = false;
       }}
     }});
   </script>
@@ -299,14 +319,14 @@ def render_wokwi_simulation() -> None:
 
     components.html(html, height=EMBED_HEIGHT, scrolling=False)
 
-    with st.expander("Open in Wokwi editor (source sketch)", expanded=False):
+    st.link_button(
+        "Open in Wokwi editor (fallback)",
+        "https://wokwi.com/projects/new/esp32",
+        help="Use this if the embedded simulator fails to compile.",
+    )
+
+    with st.expander("Manual Wokwi setup", expanded=False):
         st.markdown(
-            "The embedded simulator uses **compiled PlatformIO firmware** (`firmware.bin`). "
-            "For editing source in Wokwi directly, use `wokwi/sketch.ino`."
-        )
-        st.code(
-            "python -m platformio run -d firmware -e esp32dev\n"
-            "python tools/prepare_wokwi_firmware.py\n"
-            "streamlit run dashboard/app.py",
-            language="bash",
+            "Upload `wokwi/diagram.json`, `wokwi/sketch.ino`, and `wokwi/libraries.txt` "
+            "into a new ESP32 project on wokwi.com."
         )

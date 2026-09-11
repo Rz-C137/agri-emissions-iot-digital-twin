@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from dashboard.commissioning import commissioning_page  # noqa: E402
 from dashboard.hardware import glance, hardware_page  # noqa: E402
+from dashboard.sensor_commissioning import sensor_commissioning_page  # noqa: E402
 from dashboard.wokwi_embed import render_wokwi_simulation  # noqa: E402
 from simulator.engine import SENSOR_MODES, Twin  # noqa: E402
 from simulator.health import assess  # noqa: E402
@@ -43,7 +44,8 @@ with st.sidebar:
         "Navigation",
         [
             "🏠 Overview & Live System",
-            "🔧 Hardware & Architecture", 
+            "🌡️ Sensor Commissioning",
+            "🔧 Hardware & Architecture",
             "📊 Validation & Technical Details",
         ],
     )
@@ -221,6 +223,9 @@ def content() -> None:
         with col2:
             line(frame.tail(180), ["relative_humidity_pct"], "Humidity", "%")
 
+    elif page == "🌡️ Sensor Commissioning":
+        sensor_commissioning_page(twin)
+
     elif page == "🔧 Hardware & Architecture":
         st.markdown(
             "**Virtual hardware demonstration and system architecture**"
@@ -228,8 +233,8 @@ def content() -> None:
         
         st.markdown("### 🖥️ Virtual Hardware Prototype (Wokwi)")
         st.caption(
-            "Loads `wokwi/diagram.json` and `wokwi/sketch.ino` from this repository. "
-            "MQ-2 is a simulator-only analog surrogate, not selective NH₃."
+            "Hero node: DHT22 + DS18B20 + BMP180 + MQ-2 + microSD. Use **Wokwi VS Code** with compiled firmware "
+            "(see `docs/hardware_commissioning.md`). MQ-2 is simulator-only."
         )
         render_wokwi_simulation()
         
@@ -240,8 +245,8 @@ def content() -> None:
         # System Architecture
         st.markdown("### 🏗️ System Architecture")
         st.info(
-            "**Implemented:** ESP32 firmware (DHT22 + ADC + SD), Modbus protocol (host-tested), Python simulation. "
-            "**Future:** Physical sensor integration, RS-485 electrical commissioning."
+            "**Implemented:** Hero ESP32 firmware (DHT22, DS18B20, BMP180, MQ-2, SD, RS-485 Modbus path), "
+            "temperature disagreement QA/QC, Python twin. **Next:** Physical bench + SCD41 humidity compare."
         )
         stages = [
             "Livestock environment\nSynthetic conditions",

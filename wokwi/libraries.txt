@@ -1,2 +1,6 @@
-# Wokwi Library Dependencies
-DHT sensor library for ESPx
+DHT sensor library
+Adafruit Unified Sensor
+OneWire
+DallasTemperature
+Adafruit BMP085 Library
+PubSubClient
