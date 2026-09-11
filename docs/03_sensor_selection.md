@@ -29,6 +29,21 @@ Before ordering, record the exact manufacturer part number, supplier, quantity, 
 | 3.3 V RS-485 transceiver | MAX3485 or suitable equivalent | To be completed |
 | Breadboard/perfboard, terminals and cable | Assembly and serviceability items | To be completed |
 
+## Proposed Phase 2 BOM decision
+
+These are proposed ordering specifications, not completed procurement. Confirm availability, exact breakout-board revision, price, and datasheet limits immediately before purchase.
+
+| Item | Proposed model/module | Why selected | Interface/voltage | Accessories and evidence |
+|---|---|---|---|---|
+| Controller | Espressif ESP32-DevKitC V4, ESP32-WROOM-32E, CP2102N USB-UART | Matches the Phase 1 firmware and pin contract | 3.3 V logic; USB power/programming | USB cable; record COM detection and flashing |
+| Environmental sensor | DHT22/AM2302 module | Matches the virtual digital path | Single-wire digital; 3.3 V | 10 kOhm pull-up; record readings and response |
+| Redundant temperature | DS18B20 waterproof probe | Independent 1-Wire temperature channel | 1-Wire; 3.3 V | 4.7 kOhm pull-up; record agreement |
+| CO2/environment | Sensirion SCD41-D-R2, breakout/module | Adds CO2 and a second T/RH path for the bench | I2C address 0x62; 3.3 V | I2C pull-ups as required; record detection and readings |
+| Storage | 3.3 V-compatible SPI microSD module and industrial-rated microSD card | Local CSV logging | SPI; verify module logic level | Card; record mount and write result |
+| RS-485 | MAX3485ESA+ or a documented 3.3 V MAX3485 breakout | Avoids 5 V logic mismatch with ESP32 | UART/RS-485; 3.3 V | A/B terminal, termination plan, USB-RS485 adapter; record loopback/Modbus result |
+
+Seller, price, lead time, lot, and exact product link remain **to be completed before ordering**. These proposals do not constitute a procurement result.
+
 ## Rejected or separated alternatives
 
 - MQ-2 is retained for the virtual ADC path, not selected as a selective NH3 instrument.

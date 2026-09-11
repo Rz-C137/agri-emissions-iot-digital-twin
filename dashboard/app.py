@@ -245,7 +245,7 @@ def content() -> None:
         st.markdown("### 🖥️ Virtual Hardware Prototype (Wokwi)")
         st.caption(
             "Hero node: DHT22 + DS18B20 + BMP180 + MQ-2 + microSD. Use **Wokwi VS Code** with compiled firmware "
-            "(see `docs/hardware_commissioning.md`). MQ-2 is simulator-only."
+            "(see `docs/06_driver_configuration.md`). MQ-2 is simulator-only."
         )
         render_wokwi_simulation()
         
