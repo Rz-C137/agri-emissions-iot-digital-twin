@@ -57,15 +57,20 @@ def _build_firmware() -> tuple[bool, str]:
 
 
 def render_wokwi_simulation() -> None:
-    """Render the local firmware build and local Python simulation entry point."""
+    """Render the Wokwi circuit canvas and the local firmware handoff."""
     payload = _load_project_payload()
     if payload is None:
         st.warning("Wokwi source files not found in `wokwi/`.")
         return
 
     st.info(
-        "Local mode is enabled. The ESP32 firmware is compiled with PlatformIO on this machine; "
-        "the dashboard simulation is the hardware-independent local twin."
+        "Repository circuit view is shown below. The previous embedded Wokwi frame was removed "
+        "because it had no valid Wokwi project session and could only display Loading simulation."
+    )
+    st.image(
+        str(ROOT / "docs/figures/virtual_hardware_overview.svg"),
+        caption="ESP32 hero node: DHT22, DS18B20, BMP180, MQ-2 and microSD",
+        width="stretch",
     )
 
     with st.expander("Local ESP32 firmware", expanded=True):
@@ -82,18 +87,21 @@ def render_wokwi_simulation() -> None:
         artifact = ROOT / "firmware/.pio/build/esp32dev/firmware.bin"
         if artifact.exists():
             st.caption(f"Compiled artifact: `{artifact.relative_to(ROOT)}`")
+            st.download_button(
+                "Download firmware.bin for Wokwi",
+                artifact.read_bytes(),
+                file_name="firmware.bin",
+                mime="application/octet-stream",
+            )
         else:
             st.caption("No local firmware artifact yet. Compile it above.")
 
-    st.markdown("#### Local simulation")
-    st.success(
-        "The local Python twin is running in the Overview page. Use **Run simulation** "
-        "or **Advance 10 samples** in the sidebar."
-    )
+    st.markdown("#### Run the compiled firmware in Wokwi")
+    st.link_button("Open Wokwi ESP32 editor", "https://wokwi.com/projects/new/esp32")
     st.markdown(
-        "Wokwi browser execution is intentionally not used here because its experimental "
-        "cloud API requires a firmware upload. The source project remains available in "
-        "`wokwi/` for the documented browser workflow."
+        "In the editor, upload `wokwi/diagram.json`, then use **Upload Firmware and Start Simulation** "
+        "and select the downloaded `firmware.bin`. This produces the live circuit and serial monitor "
+        "shown in your reference image."
     )
     st.download_button(
         "Download diagram.json",
