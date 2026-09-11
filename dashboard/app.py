@@ -115,7 +115,7 @@ def content() -> None:
     st.title(page_title)
 
     if page == "🧭 Bench-to-Barn Demonstrator":
-        demonstrator_page(ROOT)
+        demonstrator_page(ROOT, twin, running)
 
     elif page == "🏠 Overview & Live System":
         st.markdown(
